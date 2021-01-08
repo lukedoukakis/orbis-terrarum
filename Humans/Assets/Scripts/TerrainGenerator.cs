@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 [RequireComponent(typeof(MeshFilter))]
 
@@ -11,6 +12,7 @@ public class TerrainGenerator : MonoBehaviour
 
     public Vector3[] vertices;
     public int[] triangles;
+    public Vector2[] uvs;
     public Color[] colors;
 
     public int xSize;
@@ -21,76 +23,123 @@ public class TerrainGenerator : MonoBehaviour
     [Range(0,1)]
     public float persistance;
     public float lacunarity;
+    public float amplitude;
 
-    public TerrainType[] terrainTypes;
-   
+    public float slopeMagnitude;
+    public float plainsLevel;
+    public float waterLevel;
+
+    public Gradient colorGradient;
+
+
+
+    public GameObject tree;
 
     // Start is called before the first frame update
     void Start()
     {
+
         mesh = new Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         GetComponent<MeshFilter>().mesh = mesh;
 
-        //CreateShape();
-        //UpdateMesh();
+        CreateShape();
+        UpdateMesh();
+        PlaceTrees();
     }
 
     private void Update()
     {
-        CreateShape();
-        UpdateMesh();
+        if (Input.GetKeyUp(KeyCode.R))
+        {
+            CreateShape();
+            UpdateMesh();
+            PlaceTrees();
+        }
     }
 
 
     void CreateShape()
     {
+
+        // initialize properties for mesh
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+        triangles = new int[xSize * zSize * 6];
+        uvs = new Vector2[vertices.Length];
         colors = new Color[(xSize + 1) * (zSize + 1)];
+
+        // set up vertices/noise map
         float[,] noiseMap = Noise.GenerateNoiseMap(xSize + 1, zSize + 1, seed, scale, octaves, persistance, lacunarity);
         for (int i = 0, z = 0; z < zSize + 1; z++)
         {
-            for(int x = 0; x < xSize + 1; x++)
+            for (int x = 0; x < xSize + 1; x++)
             {
-                float y = noiseMap[x, z]*10f;
+                float y = noiseMap[x, z];
+                if (y < plainsLevel)
+                {
+                    y = Mathf.Lerp(y, plainsLevel, .9f);
+                }
+
+                Vector2 center = new Vector2((xSize) / 2, (zSize) / 2);
+                float dFromCenter = Vector2.Distance(new Vector2(x, z), center);
+                float dNormalized = dFromCenter / center.magnitude;
+                y *= Mathf.Pow((1f - dNormalized), slopeMagnitude);
+                y *= 50f * amplitude;
                 vertices[i] = new Vector3(x, y, z);
-                //colors[i] = CalculateVertexColor(noiseMap[x, z]);
-                i++; 
+                vertices[i] = new Vector3(x, y, z);
+
+                //colors[i] = CalculateVertexColor(noiseMap[x, z], true);
+                i++;
             }
         }
 
-        triangles = new int[xSize*zSize*6];
+        // set up triangles
         int vert = 0;
         int tris = 0;
-
-        for(int z = 0; z < zSize; z++)
+        for (int z = 0; z < zSize; z++)
         {
-            Color c;
+            Color c = Color.white;
             for (int x = 0; x < xSize; x++)
             {
                 triangles[tris + 0] = vert + 0;
                 triangles[tris + 1] = vert + xSize + 1;
                 triangles[tris + 2] = vert + 1;
-                c = CalculateVertexColor((vertices[vert + 0].y/10f + vertices[vert + xSize + 1].y/10f + vertices[vert+1].y/10f) / 3f);
-                colors[vert + 0] = c;
-                colors[vert + xSize + 1] = c;
-                colors[vert + 1] = c;
-
+              
                 triangles[tris + 3] = vert + 1;
                 triangles[tris + 4] = vert + xSize + 1;
                 triangles[tris + 5] = vert + xSize + 2;
-                c = CalculateVertexColor((vertices[vert + 1].y/10f + vertices[vert + xSize + 1].y/10f + vertices[vert + 2].y/10f) / 3f);
-                colors[vert + 1] = c;
-                colors[vert + xSize + 1] = c;
-                colors[vert + 2] = c;
-
+        
                 vert++;
                 tris += 6;
             }
             vert++;
         }
 
-       
-       
+    }
+
+
+    void PlaceTrees()
+    {
+        Debug.Log("placing trees");
+
+        RaycastHit hit;
+        for (float z = 0; z < zSize; z += .1f)
+        {
+            for (float x = 0; x < xSize; x += .1f)
+            {
+                if(Physics.Raycast(new Vector3(x, 100, z), Vector3.down, out hit, 100f)){
+                    Vector3 point = hit.point;
+                    if(point.y > 18f && point.y < 50f && hit.collider.gameObject.tag == "Terrain")
+                    {
+                        if(UnityEngine.Random.Range(0, 3) == 0)
+                        {
+                            GameObject t = GameObject.Instantiate(tree, point, Quaternion.identity);
+                            t.transform.localScale = Vector3.one * .1f;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void UpdateMesh()
@@ -102,6 +151,8 @@ public class TerrainGenerator : MonoBehaviour
         mesh.colors = colors;
 
         mesh.RecalculateNormals();
+
+        gameObject.AddComponent<MeshCollider>();
     }
 
 
@@ -109,32 +160,33 @@ public class TerrainGenerator : MonoBehaviour
     {
         if(lacunarity < 1) { lacunarity = 1; }
         if(octaves < 0) { octaves = 0; }
+
+        //CreateShape();
+        //UpdateMesh();
+
     }
 
-    Color CalculateVertexColor(float height)
+
+    Color CalculateVertexColor(float height, bool blend)
     {
-        int lowCount = (int)((1f - height) * 100f);
-        int highCount = 100 - lowCount;
- 
-        Color[] colors = new Color[100];
+
         Color finalColor = new Color(0, 0, 0, 0);
-        for (int i = 0; i < lowCount; i++)
+        if (blend)
         {
-            finalColor += Color.green;
+            finalColor = colorGradient.Evaluate(height);
         }
-        for (int i = 0; i < highCount; i++)
+        else
         {
-            finalColor += Color.white;
+            if(height > .75f)
+            {
+                finalColor = Color.white;
+            }
+            else
+            {
+                finalColor = Color.green;
+            }
         }
-        finalColor /= 100;
+
         return finalColor;
-
     }
-}
-
-[System.Serializable]
-public struct TerrainType
-{
-    public string name;
-    public Color color;
 }
