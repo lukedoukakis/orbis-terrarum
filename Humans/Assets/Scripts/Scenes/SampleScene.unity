@@ -120527,7 +120527,6 @@ MonoBehaviour:
   octaves: 30
   persistance: 0.65
   lacunarity: 1.5
-  amplitude: 1
   slopeMagnitude: 1
   plainsLevel: 0.5
   waterLevel: 0.4
@@ -120560,7 +120559,12 @@ MonoBehaviour:
     m_Mode: 0
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  tree: {fileID: 131956, guid: 43ac926c2709a4b4e9868e88f7f97a61, type: 3}
+  treePlacement_density: 2
+  treePlacement_randomness: 1
+  treePlacement_minYNormal: 0.9
+  foliage: 0.4
+  tree: {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
+  normals: []
 --- !u!23 &2134817000
 MeshRenderer:
   m_ObjectHideFlags: 0
