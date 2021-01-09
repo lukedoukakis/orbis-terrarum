@@ -42,6 +42,7 @@ public class TerrainGenerator : MonoBehaviour
     public float foliage;
 
     public GameObject tree;
+    public GameObject cliff;
 
     public Vector3[] normals;
 
@@ -80,6 +81,7 @@ public class TerrainGenerator : MonoBehaviour
         normals = mesh.normals;
         GenerateTreeMap();
         PlaceTrees();
+        //PlaceCliffs();
 
 
     }
@@ -163,6 +165,32 @@ public class TerrainGenerator : MonoBehaviour
             } 
         }
     }
+
+    void PlaceCliffs()
+    {
+        for (int i = 0; i < 1; i++)
+        {
+            for (int z = 0; z < zSize; z += 1)
+            {
+                for (int x = 0; x < xSize; x += 1)
+                {
+                    if (true)
+                    {
+                        if (Physics.Raycast(new Vector3(x, 100, z), Vector3.down, out RaycastHit hit, 100f))
+                        {
+                            Vector3 point = hit.point;
+                            if (point.y > 17f && point.y < 50f && hit.normal.y < .88 && hit.collider.gameObject.tag == "Terrain")
+                            {
+                                GameObject t = GameObject.Instantiate(cliff, point, Quaternion.identity);
+                                t.transform.localScale = Vector3.one * .1f;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     public void GenerateTerrainMap()
     {

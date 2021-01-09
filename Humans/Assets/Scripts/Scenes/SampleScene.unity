@@ -502,7 +502,7 @@ GameObject:
   m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 1
   m_IsActive: 1
 --- !u!114 &2134816999
 MonoBehaviour:
@@ -120564,6 +120564,7 @@ MonoBehaviour:
   treePlacement_minYNormal: 0.9
   foliage: 0.4
   tree: {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
+  cliff: {fileID: 4817858648569861721, guid: fe39aca877df38345aa83d742fe9e8a2, type: 3}
   normals: []
 --- !u!23 &2134817000
 MeshRenderer:
