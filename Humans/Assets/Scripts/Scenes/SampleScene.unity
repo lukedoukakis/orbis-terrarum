@@ -299,13 +299,43 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!1 &852508643
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 852508644}
+  m_Layer: 0
+  m_Name: Trees
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &852508644
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 852508643}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -437,6 +467,36 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
+--- !u!1 &1206491968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1206491969}
+  m_Layer: 0
+  m_Name: Rocks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1206491969
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1206491968}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1744725371
 GameObject:
   m_ObjectHideFlags: 0
@@ -449,7 +509,7 @@ GameObject:
   - component: {fileID: 1744725373}
   m_Layer: 0
   m_Name: Water
-  m_TagString: Untagged
+  m_TagString: Water
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -484,7 +544,7 @@ MonoBehaviour:
     type: 3}
   xSize: 100
   zSize: 100
-  waterHeight: 18
+  waterHeight: 17
 --- !u!1 &2134816998
 GameObject:
   m_ObjectHideFlags: 0
@@ -120520,16 +120580,23 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
-  xSize: 250
-  zSize: 250
-  seed: -1
+  xSize: 90
+  zSize: 90
+  seed: 400
   scale: 40
   octaves: 30
   persistance: 0.65
   lacunarity: 1.5
-  slopeMagnitude: 1
-  plainsLevel: 0.5
-  waterLevel: 0.4
+  slopeMagnitude: 0.5
+  elevationLevels:
+  - 0.125
+  - 0.25
+  - 0.375
+  - 0.5
+  - 0.625
+  - 0.75
+  - 0.875
+  - 1
   colorGradient:
     serializedVersion: 2
     key0: {r: 0, g: 0.49056602, b: 0.08624845, a: 1}
@@ -120559,12 +120626,33 @@ MonoBehaviour:
     m_Mode: 0
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  treePlacement_density: 2
-  treePlacement_randomness: 1
-  treePlacement_minYNormal: 0.9
+  cliffRandomness: 0
+  treeDensity: 2
+  treeRandomness: 1
+  treeMinYNormal: 0.98
+  shoreRockDensity: 8
+  shoreRockRandomness: 1
+  shoreRockMinYNormal: 0.96
+  cliffiness: 0.5
   foliage: 0.4
-  tree: {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
-  cliff: {fileID: 4817858648569861721, guid: fe39aca877df38345aa83d742fe9e8a2, type: 3}
+  rockiness: 1
+  treeParent: {fileID: 852508643}
+  trees:
+  - {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
+  rockParent: {fileID: 1206491968}
+  rocks:
+  - {fileID: 1545284419762390, guid: 77b95d518dd24624b9baaa072094bfcb, type: 3}
+  - {fileID: 1136410170050514, guid: 776e4179c67bbce45bfe586d805ed1b1, type: 3}
+  - {fileID: 1588695694357282, guid: ef7f09302dcbb494fa7fa6b50de8f241, type: 3}
+  - {fileID: 1765881378657734, guid: e168f5d59d0657f44aea2a71d92ef39d, type: 3}
+  - {fileID: 1832396019814904, guid: d0082c69565d1894b95f941dcef0abf3, type: 3}
+  - {fileID: 1663760089543352, guid: 5f8124340f58c7842a99486ec1e5d44e, type: 3}
+  - {fileID: 1853057613824546, guid: 9911d0c340ccc74449e8ecea1a7369af, type: 3}
+  - {fileID: 1809308514339848, guid: 01cc85436acdf604fb53ed65ce9a77cc, type: 3}
+  - {fileID: 1275837788246996, guid: 300af311324cedc4cbcea2142292bc28, type: 3}
+  - {fileID: 1986631312122830, guid: 10d34ca8daa6caf458bcf9746c06a126, type: 3}
+  - {fileID: 1822502927068284, guid: e0ff1c3fe24c34d40bd6dc7ad4295f10, type: 3}
+  - {fileID: 1050810324231342, guid: 7ed424ab627e11f41af3ad0ea72e403f, type: 3}
   normals: []
 --- !u!23 &2134817000
 MeshRenderer:

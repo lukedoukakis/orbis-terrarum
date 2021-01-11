@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Feature
   - Terrain
+  - Water
   layers:
   - Default
   - TransparentFX
