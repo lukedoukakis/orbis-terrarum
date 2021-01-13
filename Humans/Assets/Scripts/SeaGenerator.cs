@@ -18,6 +18,7 @@ public class SeaGenerator : MonoBehaviour
     {
         PlaceWaterTiles();
         AddCollider();
+        AdjustPosition();
     }
 
     // Update is called once per frame
@@ -46,6 +47,11 @@ public class SeaGenerator : MonoBehaviour
         bc.size = new Vector3(xSize*5f, 4f, zSize*5f);
         bc.center = new Vector3(xSize*5f/2f, waterHeight - bc.size.y/2f, zSize*5f/2f);
         bc.isTrigger = true;
+    }
+
+    void AdjustPosition()
+    {
+        transform.position = new Vector3(xSize*5f / -2f, transform.position.y, zSize*5f / -2f);
     }
 
 

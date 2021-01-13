@@ -39,7 +39,7 @@ public class TerrainGenerator : MonoBehaviour
     // feature restrictions
     [Range(.5f, 1.5f)] public float cliffRandomness;
 
-    [Range(1, 3)] public int treeDensity;
+    [Range(1, 5)] public int treeDensity;
     [Range(.5f, 1.5f)] public float treeRandomness;
     [Range(.9f, 1)] public float treeMinYNormal;
 
@@ -175,7 +175,7 @@ public class TerrainGenerator : MonoBehaviour
                             if (hit.normal.y > treeMinYNormal && hit.collider.gameObject.tag == "Terrain")
                             {
                                 GameObject t = GameObject.Instantiate(trees[x%trees.Length], point, Quaternion.identity, treeParent.transform);
-                                t.transform.localScale = Vector3.one * .1f;
+                                t.transform.localScale = Vector3.one * .05f;
                             }
                         }
                     }
@@ -201,8 +201,8 @@ public class TerrainGenerator : MonoBehaviour
                             Vector3 point = hit.point;
                             if (hit.normal.y > shoreRockMinYNormal && hit.collider.gameObject.tag == "Terrain")
                             {
-                                GameObject t = GameObject.Instantiate(rocks[x%rocks.Length], point + Vector3.down*.15f, Quaternion.identity, rockParent.transform);
-                                t.transform.localScale = Vector3.one * .5f * Mathf.Pow(UnityEngine.Random.value, .15f);
+                                GameObject t = GameObject.Instantiate(rocks[x%rocks.Length], point + Vector3.down*.075f, Quaternion.identity, rockParent.transform);
+                                t.transform.localScale = Vector3.one * .25f * Mathf.Pow(UnityEngine.Random.value, .1f);
                             }
                         }
                     }

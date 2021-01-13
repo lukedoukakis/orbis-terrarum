@@ -415,7 +415,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.35355338, y: 0.35355338, z: -0.1464466, w: 0.8535535}
-  m_LocalPosition: {x: 100, y: 30, z: 100}
+  m_LocalPosition: {x: 45, y: 30, z: 45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -120627,7 +120627,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   cliffRandomness: 0
-  treeDensity: 2
+  treeDensity: 5
   treeRandomness: 1
   treeMinYNormal: 0.98
   shoreRockDensity: 8
