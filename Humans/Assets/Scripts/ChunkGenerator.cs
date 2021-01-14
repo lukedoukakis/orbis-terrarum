@@ -5,11 +5,22 @@ using System;
 
 [RequireComponent(typeof(MeshFilter))]
 
-public class TerrainGenerator : MonoBehaviour
+public class ChunkGenerator : MonoBehaviour
 {
 
+    public Transform cameraT;
 
+    public GameObject chunkPrefab;
+    GameObject chunk;
     Mesh mesh;
+
+    public int xIndex;
+    public int zIndex;
+    public float xOffset;
+    public float zOffset;
+
+    List<ChunkData> ChunkDataToLoad;
+    List<ChunkData> ChunkDataLoaded;
 
     public Vector3[] vertices;
     public int[] triangles;
@@ -22,8 +33,7 @@ public class TerrainGenerator : MonoBehaviour
     public static bool[,] TreeMap;
     public static bool[,] ShoreRockMap;
 
-    public int xSize;
-    public int zSize;
+    public int chunkSize;
     public int seed;
     public float scale;
     public int octaves;
@@ -63,45 +73,127 @@ public class TerrainGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-
-        if (seed == -1) { seed = UnityEngine.Random.Range(-100000, 100000); }
-        UnityEngine.Random.InitState(seed);
-       
-      
-        mesh = new Mesh();
-        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        GetComponent<MeshFilter>().mesh = mesh;
-
-        CreateScene();
-
-
+        init();
     }
 
     private void Update()
     {
-        if (Input.GetKeyUp(KeyCode.R))
+        //if (Input.GetKey(KeyCode.R)) {
+            UpdateChunksToLoad();
+            LoadChunks();
+            DeloadChunks();
+       // }
+    }
+
+
+
+    void init()
+    {
+        cameraT.position = new Vector3(0, 40, 0);
+
+        if (seed == -1) { seed = UnityEngine.Random.Range(-100000, 100000); }
+        UnityEngine.Random.InitState(seed);
+
+        ChunkDataToLoad = new List<ChunkData>();
+        ChunkDataLoaded = new List<ChunkData>();
+
+        //LoadChunk(0, 0);
+    }
+
+
+    void UpdateChunksToLoad()
+    {
+        Vector3 cameraPos = cameraT.position; cameraPos.y = 0f;
+        Vector2 cameraPos_chunkSpace = new Vector2(cameraPos.x / chunkSize, cameraPos.z / chunkSize);
+        Vector2 currentChunkCoord = new Vector2(Mathf.Floor(cameraPos_chunkSpace.x), Mathf.Floor(cameraPos_chunkSpace.y));
+        //Vector2 currentChunkCenter = currentChunkCoord * chunkSize + new Vector2(chunkSize / 2, chunkSize / 2);
+
+        //Debug.Log(cameraPos_chunkSpace.ToString("F3"));
+
+        // get neighbor chunk coordinates
+        Vector2 halfVec = new Vector2(.5f, .5f);
+        Vector2[] neighborChunkCoords = new Vector2[]
         {
-            CreateScene();
+            currentChunkCoord + Vector2.up,
+            currentChunkCoord + Vector2.down,
+            currentChunkCoord + Vector2.left,
+            currentChunkCoord + Vector2.right,
+            currentChunkCoord + Vector2.up + Vector2.right,
+            currentChunkCoord + Vector2.up + Vector2.left,
+            currentChunkCoord + Vector2.down + Vector2.right,
+            currentChunkCoord + Vector2.up + Vector2.left
+        };
+
+        // remove chunks out of rendering range from ChunksToLoad
+        foreach (ChunkData cd in ChunkDataToLoad)
+        {
+            if (Vector2.Distance(cameraPos_chunkSpace, cd.coord + halfVec) >= 1f)
+            {
+                ChunkDataToLoad.Remove(cd);
+            }
+        }
+
+        // add chunks in rendering range to ChunksToLoad
+        foreach (Vector2 chunkCoord in neighborChunkCoords)
+        {
+            if(Vector2.Distance(cameraPos_chunkSpace, chunkCoord + halfVec) < 1f)
+            {
+
+                int index = ChunkDataToLoad.FindIndex(cd => cd.coord == chunkCoord);
+                if (index < 0)
+                {
+                    ChunkDataToLoad.Add(new ChunkData(chunkCoord));
+                }
+            }
         }
     }
 
-    void CreateScene()
+    void LoadChunks()
+    {
+        foreach (ChunkData cd in ChunkDataToLoad)
+        {
+            if (!cd.loaded)
+            {
+                LoadChunk(cd);
+                ChunkDataLoaded.Add(cd);
+            }
+        }
+    }
+
+    void DeloadChunks()
+    {
+        foreach (ChunkData loadedCd in ChunkDataLoaded)
+        {
+            int index = ChunkDataToLoad.FindIndex(cd => cd.coord == loadedCd.coord);
+            if (index < 0)
+            {
+                loadedCd.Deload();
+                ChunkDataLoaded.Remove(loadedCd);
+            }
+        }
+    }
+
+
+    void LoadChunk(ChunkData cd)
     {
 
-        GenerateCliffMap();
+        cd.init(chunkPrefab);
+        chunk = cd.chunk;
+        mesh = cd.mesh;
+        xIndex = (int)(cd.coord.x);
+        zIndex = (int)(cd.coord.y);
+        xOffset = xIndex * chunkSize;
+        zOffset = zIndex * chunkSize;
 
+        /*
+        GenerateCliffMap();
         GenerateTerrainMap();
         PlaceTerrain();
-
-     
         GenerateTreeMap();
-        PlaceTrees();
-
         GenerateShoreRockMap();
+        PlaceTrees();
         PlaceShoreRocks();
-
-
+        */
     }
 
 
@@ -109,19 +201,19 @@ public class TerrainGenerator : MonoBehaviour
     {
 
         // initialize properties for mesh
-        vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-        triangles = new int[xSize * zSize * 6];
+        vertices = new Vector3[(chunkSize + 1) * (chunkSize + 1)];
+        triangles = new int[chunkSize * chunkSize * 6];
         uvs = new Vector2[vertices.Length];
-        colors = new Color[(xSize + 1) * (zSize + 1)];
+        colors = new Color[(chunkSize + 1) * (chunkSize + 1)];
 
         // set vertices according to TerrainMap
-        for (int i = 0, z = 0; z < zSize + 1; z++)
+        for (int i = 0, z = 0; z < chunkSize + 1; z++)
         {
-            for (int x = 0; x < xSize + 1; x++)
+            for (int x = 0; x < chunkSize + 1; x++)
             {
                 float y = TerrainMap[x, z];
                 y *= 50f;
-                vertices[i] = new Vector3(x, y, z);
+                vertices[i] = new Vector3(x + xOffset, y, z + zOffset);
                 i++;
             }
         }
@@ -129,17 +221,17 @@ public class TerrainGenerator : MonoBehaviour
         // set up triangles
         int vert = 0;
         int tris = 0;
-        for (int z = 0; z < zSize; z++)
+        for (int z = 0; z < chunkSize; z++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int x = 0; x < chunkSize; x++)
             {
                 triangles[tris + 0] = vert + 0;
-                triangles[tris + 1] = vert + xSize + 1;
+                triangles[tris + 1] = vert + chunkSize + 1;
                 triangles[tris + 2] = vert + 1;
               
                 triangles[tris + 3] = vert + 1;
-                triangles[tris + 4] = vert + xSize + 1;
-                triangles[tris + 5] = vert + xSize + 2;
+                triangles[tris + 4] = vert + chunkSize + 1;
+                triangles[tris + 5] = vert + chunkSize + 2;
         
                 vert++;
                 tris += 6;
@@ -154,22 +246,29 @@ public class TerrainGenerator : MonoBehaviour
         mesh.colors = colors;
         mesh.RecalculateNormals();
 
-        gameObject.AddComponent<MeshCollider>();
+        chunk.AddComponent<MeshCollider>();
+
 
     }
 
 
     void PlaceTrees()
     {
+
+        foreach (Transform child in treeParent.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+
         for (int i = 0; i < treeDensity; i++)
         {
-            for (int z = 0; z < zSize; z += 1)
+            for (int z = 0; z < chunkSize; z += 1)
             {
-                for (int x = 0; x < xSize; x += 1)
+                for (int x = 0; x < chunkSize; x += 1)
                 {
                     if (TreeMap[x, z] == true)
                     {
-                        if (Physics.Raycast(new Vector3(x + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, 100, z + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10), Vector3.down, out RaycastHit hit, 100f))
+                        if (Physics.Raycast(new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, 100, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10), Vector3.down, out RaycastHit hit, 100f))
                         {
                             Vector3 point = hit.point;
                             if (hit.normal.y > treeMinYNormal && hit.collider.gameObject.tag == "Terrain")
@@ -188,15 +287,20 @@ public class TerrainGenerator : MonoBehaviour
 
     void PlaceShoreRocks()
     {
+        foreach (Transform child in rockParent.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+
         for (int i = 0; i < shoreRockDensity; i++)
         {
-            for (int z = 0; z < zSize; z += 1)
+            for (int z = 0; z < chunkSize; z += 1)
             {
-                for (int x = 0; x < xSize; x += 1)
+                for (int x = 0; x < chunkSize; x += 1)
                 {
                     if (ShoreRockMap[x, z] == true)
                     {
-                        if (Physics.Raycast(new Vector3(x + (UnityEngine.Random.value * 2f - 1f) * shoreRockRandomness * 10, 100, z + (UnityEngine.Random.value * 2f - 1f) * shoreRockRandomness * 10), Vector3.down, out RaycastHit hit, 100f))
+                        if (Physics.Raycast(new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * shoreRockRandomness * 10, 100, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * shoreRockRandomness * 10), Vector3.down, out RaycastHit hit, 100f))
                         {
                             Vector3 point = hit.point;
                             if (hit.normal.y > shoreRockMinYNormal && hit.collider.gameObject.tag == "Terrain")
@@ -214,13 +318,13 @@ public class TerrainGenerator : MonoBehaviour
 
     public void GenerateCliffMap()
     {
-        CliffMap = new float[xSize + 1, zSize + 1];
+        CliffMap = new float[chunkSize + 1, chunkSize + 1];
 
-        for (int z = 0; z < zSize; z++)
+        for (int z = 0; z < chunkSize; z++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int x = 0; x < chunkSize; x++)
             {
-                float perlinValue = Mathf.PerlinNoise(x / 10f - seed, z / 10f - seed);
+                float perlinValue = Mathf.PerlinNoise((x) / 10f - seed + xOffset, (z) / 10f - seed + zOffset);
                 CliffMap[x, z] = perlinValue;
             }
         }
@@ -232,16 +336,16 @@ public class TerrainGenerator : MonoBehaviour
     public void GenerateTerrainMap()
     {
 
-        TerrainMap = new float[xSize+1, zSize+1];
+        TerrainMap = new float[chunkSize+1, chunkSize+1];
 
         if (scale <= 0) { scale = .0001f; }
 
         float heightMax = float.MinValue;
         float heightMin = float.MaxValue;
 
-        for (int z = 0; z < zSize; z++)
+        for (int z = 0; z < chunkSize; z++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int x = 0; x < chunkSize; x++)
             {
 
                 float amplitude = 1;
@@ -249,8 +353,8 @@ public class TerrainGenerator : MonoBehaviour
                 float height = 0f;
                 for (int i = 0; i < octaves; i++)
                 {
-                    float sampleX = x / scale * frequency + seed;
-                    float sampleZ = z / scale * frequency + seed;
+                    float sampleX = (x + xOffset) / scale * frequency + seed;
+                    float sampleZ = (z + zOffset) / scale * frequency + seed;
 
                     float scale2 = scale + 5f;
                     float scale3 = scale - 5f;
@@ -266,7 +370,7 @@ public class TerrainGenerator : MonoBehaviour
                 }
 
                 // update yMax and yMin for normalization
-                height *= (40f * Mathf.PerlinNoise((x / 120f) + 1000, (z / 120f) + 1000));
+                height *= (40f * Mathf.PerlinNoise(((x + xOffset) / 120f) + 1000, ((z + zOffset) / 120f) + 1000));
                 if (height > heightMax)
                 {
                     heightMax = height;
@@ -283,9 +387,9 @@ public class TerrainGenerator : MonoBehaviour
 
         // normalize TerrainMap values in range [0,1] and apply modifications
         float y;
-        for (int z = 0; z < zSize; z++)
+        for (int z = 0; z < chunkSize; z++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int x = 0; x < chunkSize; x++)
             {
                 y = Mathf.InverseLerp(heightMin, heightMax, TerrainMap[x, z]);
 
@@ -297,13 +401,14 @@ public class TerrainGenerator : MonoBehaviour
                     y = Mathf.Lerp(y, .5f, .8f);
                 }
 
-
+                
                 // slope land into the sea based on distance from the center
-                Vector2 center = new Vector2((xSize + 1) / 2, (zSize + 1) / 2);
+                Vector2 center = new Vector2((chunkSize + 1) / 2, (chunkSize + 1) / 2);
                 float dFromCenter = Vector2.Distance(new Vector2(x, z), center);
                 float dNormalized = dFromCenter / center.magnitude;
                 dNormalized = Mathf.Clamp(dNormalized, .25f, 1f);
                 y *= Mathf.Pow((1f - dNormalized), slopeMagnitude);
+                
 
 
                 
@@ -321,11 +426,7 @@ public class TerrainGenerator : MonoBehaviour
                     if (i < 0) { i = 0; }                   
 
                     y = Mathf.Lerp(y, elevationLevels[i], .8f);
-
-
-
                 }
-
                 TerrainMap[x, z] = y;
             }
         }
@@ -335,14 +436,14 @@ public class TerrainGenerator : MonoBehaviour
     // generates TreeMap based off TerrainMap
     public void GenerateTreeMap()
     {
-        TreeMap = new bool[xSize + 1, zSize + 1];
-        for (int z = 0; z < zSize; z++)
+        TreeMap = new bool[chunkSize + 1, chunkSize + 1];
+        for (int z = 0; z < chunkSize; z++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int x = 0; x < chunkSize; x++)
             {
                 if (TerrainMap[x, z] > .31f && TerrainMap[x, z] < 1f)
                 {
-                    float perlinValue = Mathf.PerlinNoise(x / 40f + seed, z / 40f + seed);
+                    float perlinValue = Mathf.PerlinNoise((x) / 40f + seed + xOffset, (z)/ 40f + seed + zOffset);
                     if ((perlinValue > (1f - foliage)))
                     {
                         TreeMap[x, z] = true;
@@ -354,14 +455,14 @@ public class TerrainGenerator : MonoBehaviour
 
     public void GenerateShoreRockMap()
     {
-        ShoreRockMap = new bool[xSize + 1, zSize + 1];
-        for (int z = 0; z < zSize; z++)
+        ShoreRockMap = new bool[chunkSize + 1, chunkSize + 1];
+        for (int z = 0; z < chunkSize; z++)
         {
-            for (int x = 0; x < xSize; x++)
+            for (int x = 0; x < chunkSize; x++)
             {
                 if (TerrainMap[x, z] > .28f && TerrainMap[x, z] < .31f)
                 {
-                    float perlinValue = Mathf.PerlinNoise(x / 10f + seed, z / 10f + seed);
+                    float perlinValue = Mathf.PerlinNoise((x + xOffset) / 10f + seed, (z + zOffset) / 10f + seed);
                     if ((perlinValue > (1f - rockiness)))
                     {
                         ShoreRockMap[x, z] = true;
