@@ -52,11 +52,11 @@ public class CameraController : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Space))
         {
-            rb.AddForce(transform.up* moveSpeed, ForceMode.Acceleration);
+            rb.AddForce(Vector3.up* moveSpeed, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            rb.AddForce(transform.up * -1f * moveSpeed, ForceMode.Acceleration);
+            rb.AddForce(Vector3.up * -1f * moveSpeed, ForceMode.Acceleration);
         }
 
         if (rb.velocity.magnitude > 10f)

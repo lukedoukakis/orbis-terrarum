@@ -8,11 +8,19 @@ public class ChunkData
  
     public Vector2 coord;
     public bool loaded;
+    public int randomState;
 
     public GameObject chunk;
+    public GameObject trees;
+
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
     public Mesh mesh;
+
+    public float[,] TerrainMap;
+    public float[,] CliffMap;
+    public bool[,] TreeMap;
+    public bool[,] ShoreRockMap;
 
     public ChunkData(Vector2 _coord)
     {
@@ -22,7 +30,10 @@ public class ChunkData
 
     public void init(GameObject obj)
     {
+        randomState = (int)(coord.x + coord.y * 10f);
         chunk = GameObject.Instantiate(obj);
+        trees = new GameObject();
+        trees.transform.SetParent(chunk.transform);
         meshRenderer = chunk.GetComponent<MeshRenderer>();
         meshFilter = chunk.GetComponent<MeshFilter>();
         mesh = new Mesh();
@@ -37,8 +48,12 @@ public class ChunkData
         mesh.Clear();
         GameObject g = chunk;
         chunk = null;
-        GameObject.Destroy(chunk);
+        GameObject.Destroy(g);
         loaded = false;
+        foreach (Transform child in trees.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
     }
 
 }
