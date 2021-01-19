@@ -11,14 +11,21 @@ public class ChunkData
     public int randomState;
 
     public GameObject chunk;
+    public GameObject sea;
     public GameObject trees;
 
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
     public Mesh mesh;
 
-    public float[,] TerrainMap;
+    public float[,] ElevationMap;
+    public float[,] MountainMap;
+    public float[,] WetnessMap;
+    public float[,] TemperatureMap;
+
     public float[,] CliffMap;
+    public float[,] RiverMap;
+    public float[,] TerrainMap;
     public bool[,] TreeMap;
     public bool[,] ShoreRockMap;
 
@@ -32,6 +39,9 @@ public class ChunkData
     {
         randomState = (int)(coord.x + coord.y * 10f);
         chunk = GameObject.Instantiate(obj);
+        chunk.transform.position = Vector3.zero;
+        sea = new GameObject();
+        sea.transform.SetParent(chunk.transform);
         trees = new GameObject();
         trees.transform.SetParent(chunk.transform);
         meshRenderer = chunk.GetComponent<MeshRenderer>();
