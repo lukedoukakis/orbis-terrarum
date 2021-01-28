@@ -120647,6 +120647,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   cliffRandomness: 0
+  riverDensity: 3
   treeDensity: 1
   treeRandomness: 1
   treeMinYNormal: 0.98

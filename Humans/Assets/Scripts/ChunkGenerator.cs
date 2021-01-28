@@ -70,6 +70,8 @@ public class ChunkGenerator : MonoBehaviour
     // feature restrictions
     [Range(.5f, 1.5f)] public float cliffRandomness;
 
+    [Range(1f, 3f)] public int riverDensity;
+
     [Range(1, 10)] public int treeDensity;
     [Range(.5f, 1.5f)] public float treeRandomness;
     [Range(.9f, 1)] public float treeMinYNormal;
@@ -228,9 +230,9 @@ public class ChunkGenerator : MonoBehaviour
         xOffset = xIndex * chunkSize;
         zOffset = zIndex * chunkSize;
 
+        cd.TemperatureMap = GenerateTemperatureMap();
         cd.MountainMap = GenerateMountainMap();
         cd.ElevationMap = GenerateElevationMap();
-        cd.TemperatureMap = GenerateTemperatureMap();
         cd.RiverMap = GenerateRiverMap();
         cd.WetnessMap = GenerateWetnessMap();
         cd.CliffMap = GenerateCliffMap();
@@ -266,7 +268,7 @@ public class ChunkGenerator : MonoBehaviour
                 }
                 
 
-                perlinValue = Mathf.Clamp(perlinValue, MountainMap[x, z] - .5f, 1f);
+                //perlinValue = Mathf.Clamp(perlinValue, MountainMap[x, z] - .5f, 1f);
 
                 ElevationMap[x, z] = perlinValue;
 
@@ -303,9 +305,6 @@ public class ChunkGenerator : MonoBehaviour
                 // initial temperature
                 float perlinValue = .3f + Mathf.PerlinNoise((x + xOffset + seed + .01f) / temperatureMapScale, (z + zOffset + seed + .01f) / temperatureMapScale);
                 perlinValue = Mathf.Clamp(perlinValue, 0f, 1f);
-
-                // modify from MountainMap
-                //perlinValue *= (1f - MountainMap[x, z]);
   
                 TemperatureMap[x, z] = perlinValue;
             }
@@ -339,8 +338,46 @@ public class ChunkGenerator : MonoBehaviour
         {
             for (int x = 0; x < chunkSize + 1; x++)
             {
+
+                float[] riverXs = new float[3];
+                float indexOrder = -1;
+                float distance = float.MaxValue;
+                for(int i = 0; i < 3; i++)
+                {
+                    riverXs[i] = (xOffset + indexOrder*(chunkSize+1)) + (3f + 96f * Mathf.PerlinNoise((float)((z + (zOffset) + (i * 100) + seed) / riverMapScale + .01f), (float)((x + (xOffset) + (i * 100) + seed) / riverMapScale + .01f)));
+                    float d = Mathf.Abs((riverXs[i] - (x + xOffset)));
+                    if(d < distance) { distance = d; }
+                    indexOrder++;
+                }
+                if (distance < 60f)
+                {
+                    if (distance < 5f)
+                    {
+                        RiverMap[x, z] = 1f;
+                    }
+                    else
+                    {
+                        float distanceNorm = Mathf.InverseLerp(0f, 60f, distance);
+                        distanceNorm = Mathf.Clamp(distanceNorm, .1f, 1f);
+                        RiverMap[x, z] = 1f - distanceNorm;
+                    }
+                }
+                else
+                {
+                    RiverMap[x, z] = 0f;
+                }
+
+
+
+
+
+
+
+
+
+                /*
                 float riverX = (3f + 96f * Mathf.PerlinNoise((float)((z + zOffset + seed) / riverMapScale + .01f), (float)((x + xOffset + seed) / riverMapScale + .01f)));
-                float distance = Mathf.Abs((riverX - (x+xOffset)));
+                float distance = Mathf.Abs((riverX - (x + xOffset)));
                 if (distance < 60f)
                 {
                     if(distance < 5f)
@@ -362,6 +399,26 @@ public class ChunkGenerator : MonoBehaviour
                     RiverMap[x, z] = 0f;
                 }
                 //Debug.Log(RiverMap[x, z]);
+                */
+
+                // GOOD FOR CREATING LARGE LAKES AND INLETS FOR WETLAND AREA
+                /*
+                float f = Mathf.PerlinNoise((float)((z + zOffset + seed) / (riverMapScale + 50f) +.01f), (float)((x + xOffset + seed) / (riverMapScale + 50f) + .01f));
+                float rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 10f, (z + zOffset + .01f) / 10f) + .5f, .3f) - 1f;
+                f += rough;
+                float dif = Mathf.Abs(f - .7f);
+                if (dif < .1f)
+                {
+                    f = 1f;
+                }
+                else
+                {
+                    f = 1f / (1f + dif);
+                }
+                RiverMap[x, z] = f;
+                */
+
+
 
             }
         }
@@ -462,7 +519,8 @@ public class ChunkGenerator : MonoBehaviour
                 if (height > heightCutoff)
                 {
                     //height = heightCutoff;
-                    height = Mathf.Lerp(height, heightCutoff, Mathf.PerlinNoise((x+xOffset)/90.01f, (z + zOffset) / 90.01f)*Mathf.Pow((UnityEngine.Random.value+.5f), .05f));
+                    //height = Mathf.Lerp(height, heightCutoff, Mathf.PerlinNoise((x+xOffset)/90.01f, (z + zOffset) / 90.01f)*Mathf.Pow((UnityEngine.Random.value+.5f), .05f));
+                    height = Mathf.Lerp(height, heightCutoff, tMod);
                 }
 
                 // create ocean where height is below flatLevel
