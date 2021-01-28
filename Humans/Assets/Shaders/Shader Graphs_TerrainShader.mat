@@ -19,7 +19,12 @@ Material:
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - Texture2DArray_D9F507DF:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats: []
     m_Colors:
-    - Color_9C158BA5: {r: 1, g: 0.57254905, b: 0.7122844, a: 0}
+    - Color_20D74E1E: {r: 0.9339623, g: 0.63290304, b: 0.6123621, a: 0}
+    - Color_9C158BA5: {r: 0.3773585, g: 0.13349947, b: 0.13349947, a: 0}

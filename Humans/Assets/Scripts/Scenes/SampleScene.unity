@@ -436,7 +436,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 963194227}
   gyro: {fileID: 271418803}
-  moveSpeed: 10
+  moveSpeed: 20
   sensitivity: 1
 --- !u!114 &963194230
 MonoBehaviour:
@@ -485,6 +485,79 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!1 &1316416445
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1316416447}
+  - component: {fileID: 1316416446}
+  m_Layer: 0
+  m_Name: Lighting Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1316416446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316416445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712b3aa9346d9944583fb996abb928c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainLight: {fileID: 705507994}
+  tempGradient:
+    serializedVersion: 2
+    key0: {r: 0.8207547, g: 0.8207547, b: 0.8207547, a: 1}
+    key1: {r: 1, g: 0.85500467, b: 0.75, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+--- !u!4 &1316416447
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316416445}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.3551991, y: 4.9147286, z: 0.8305053}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2134816998
 GameObject:
   m_ObjectHideFlags: 0
@@ -120527,23 +120600,23 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 0, b: 0, a: 1}
-  elevationMapScale: 200
+  elevationMapScale: 400
   riverMapScale: 20
-  mountainMapScale: 300
-  wetnessMapScale: 100
-  temperatureMapScale: 100
+  wetnessMapScale: 400
+  temperatureMapScale: 400
   chunkRenderDistance: 2
   chunkSize: 100
   seed: 400
-  scale: 40
+  scale: 60
   octaves: 30
   persistance: 0.65
   lacunarity: 1.5
   slopeMagnitude: 0
-  elevationLevel: 0
+  elevationAmplitude: 120
   flatLevel: 0.8
-  waterLevel: 0.79
+  waterLevel: 0.795
   treeLevel: 0.8
+  cactusLevel: 0.8
   colorGradient:
     serializedVersion: 2
     key0: {r: 0, g: 0, b: 0, a: 1}
@@ -120574,9 +120647,12 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   cliffRandomness: 0
-  treeDensity: 3
+  treeDensity: 1
   treeRandomness: 1
   treeMinYNormal: 0.98
+  cactusDensity: 1
+  cactusRandomness: 1
+  cactusMinYNormal: 0.99
   shoreRockDensity: 8
   shoreRockRandomness: 1
   shoreRockMinYNormal: 0.96
@@ -120584,8 +120660,15 @@ MonoBehaviour:
   foliage: 0.5
   rockiness: 1
   treeParent: {fileID: 0}
-  trees:
+  treesJungle:
   - {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
+  treesDeciduous:
+  - {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
+  treeFir:
+  - {fileID: 4149566187594456988, guid: cad0117e708e502409e5f6d3683f8c0e, type: 3}
+  cactusParent: {fileID: 0}
+  cacti:
+  - {fileID: 6876700886634475216, guid: f33e6b04aa2ad5e4eb0f79eb78af5cf1, type: 3}
   rockParent: {fileID: 0}
   rocks:
   - {fileID: 1545284419762390, guid: 77b95d518dd24624b9baaa072094bfcb, type: 3}
