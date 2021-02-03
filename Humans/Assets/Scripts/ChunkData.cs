@@ -13,23 +13,19 @@ public class ChunkData
     public GameObject chunk;
     public GameObject sea;
     public GameObject trees;
-    public GameObject cacti;
 
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
     public Mesh mesh;
 
     public float[,] ElevationMap;
+    public float[,] CoastMap;
     public float[,] MountainMap;
     public float[,] WetnessMap;
     public float[,] TemperatureMap;
-
-    public float[,] CliffMap;
-    public float[,] RiverMap;
-    public float[,] TerrainMap;
+    public float[,] FreshWaterMap;
+    public float[,] HeightMap;
     public bool[,] TreeMap;
-    public bool[,] CactusMap;
-    public bool[,] ShoreRockMap;
 
     public ChunkData(Vector2 _coord)
     {
@@ -47,8 +43,6 @@ public class ChunkData
         sea.transform.SetParent(chunk.transform);
         trees = new GameObject();
         trees.transform.SetParent(chunk.transform);
-        cacti = new GameObject();
-        cacti.transform.SetParent(chunk.transform);
         meshRenderer = chunk.GetComponent<MeshRenderer>();
         meshFilter = chunk.GetComponent<MeshFilter>();
         mesh = new Mesh();

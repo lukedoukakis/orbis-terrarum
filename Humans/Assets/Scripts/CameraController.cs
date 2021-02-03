@@ -26,7 +26,7 @@ public class CameraController : MonoBehaviour
 
 
 
-        mainCamera.transform.position = new Vector3(100f, 0f, -1000f) + Vector3.up * 85f;
+        mainCamera.transform.position = new Vector3(Random.Range(-1000f, 1000f), 0f, Random.Range(-1000f, 1000f)) + Vector3.up * 120f;
         mainCamera.transform.rotation = Quaternion.Euler(25f, 45f, 0f);
     }
 
@@ -59,11 +59,18 @@ public class CameraController : MonoBehaviour
             rb.AddForce(Vector3.up * -1f * moveSpeed / 2f, ForceMode.Acceleration);
         }
 
-        float rot = Input.GetAxis("Mouse X");
-        if(Mathf.Abs(rot) > 0f)
+        float rotX = Input.GetAxis("Mouse X");
+        if(Mathf.Abs(rotX) > 0f)
         {
-            mainCamera.transform.Rotate(Vector3.up * rot);
+            mainCamera.transform.Rotate(Vector3.up * rotX);
         }
+        /*
+        float rotY = Input.GetAxis("Mouse Y");
+        if (Mathf.Abs(rotY) > 0f)
+        {
+            mainCamera.transform.Rotate(Vector3.forward * rotY);
+        }
+        */
 
         Vector3 eulers = transform.rotation.eulerAngles;
         Vector3 pos = mainCamera.transform.position;
