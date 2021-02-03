@@ -54,15 +54,12 @@ public class ChunkData
 
     public void Deload()
     {
-        mesh.Clear();
-        GameObject g = chunk;
-        chunk = null;
-        GameObject.Destroy(g);
+        Component.Destroy(mesh);
+        GameObject.Destroy(chunk);
+        GameObject.Destroy(trees);
+        GameObject.Destroy(sea);
         loaded = false;
-        foreach (Transform child in trees.transform)
-        {
-            GameObject.Destroy(child.gameObject);
-        }
+
     }
 
 }
