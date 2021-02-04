@@ -8,7 +8,7 @@ public class Biome : MonoBehaviour
     public enum BiomeType
     {
         Desert,
-        Floodplain,
+        Swamp,
         Jungle,
         Plains,
         Forest,
@@ -57,19 +57,19 @@ public class Biome : MonoBehaviour
     };
 
 
-    static int[][] FloodplainConditions = new int[][]
+    static int[][] SwampConditions = new int[][]
     {
         // temp
-        new int[]{hot},
+        new int[]{temperate, hot},
 
         // wetness
-        new int[]{dry},
+        new int[]{wet},
 
         // height
         new int[]{low},
 
         // fresh water requirement
-        new int[]{fresh}
+        new int[]{}
     };
 
     static int[][] JungleConditions = new int[][]
@@ -152,7 +152,7 @@ public class Biome : MonoBehaviour
     static int[][][] BiomeConditions = new int[][][]
     {
         DesertConditions,
-        FloodplainConditions,
+        SwampConditions,
         JungleConditions,
         PlainsConditions,
         ForestConditions,
@@ -184,9 +184,9 @@ public class Biome : MonoBehaviour
             t = cold;
         }
 
-        if (wetness > .4f)
+        if (wetness > .3f)
         {
-            if (wetness > .9f)
+            if (wetness > .7f)
             {
                 w = wet;
             }
@@ -216,7 +216,7 @@ public class Biome : MonoBehaviour
             h = low;
         }
 
-        if (fresh > .97f)
+        if (freshWater > .93f)
         {
             f = fresh;
         }
@@ -258,6 +258,7 @@ public class Biome : MonoBehaviour
                 break;
             }
         }
+
         return biome;
 
     }

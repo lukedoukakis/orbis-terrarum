@@ -21,12 +21,13 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         Application.targetFrameRate = -1;
+        QualitySettings.vSyncCount = 1;
 
         rb = GetComponent<Rigidbody>();
 
 
 
-        mainCamera.transform.position = new Vector3(Random.Range(-1000f, 1000f), 0f, Random.Range(-1000f, 1000f)) + Vector3.up * 120f;
+        mainCamera.transform.position = new Vector3(Random.Range(-1000f, 1000f), 0f, Random.Range(-1000f, 1000f)) + Vector3.up * 100f;
         mainCamera.transform.rotation = Quaternion.Euler(25f, 45f, 0f);
     }
 
@@ -62,7 +63,7 @@ public class CameraController : MonoBehaviour
         float rotX = Input.GetAxis("Mouse X");
         if(Mathf.Abs(rotX) > 0f)
         {
-            mainCamera.transform.Rotate(Vector3.up * rotX);
+            mainCamera.transform.Rotate(Vector3.up * rotX * sensitivity * 50f*Time.deltaTime);
         }
         /*
         float rotY = Input.GetAxis("Mouse Y");
@@ -77,44 +78,10 @@ public class CameraController : MonoBehaviour
         mainCamera.transform.rotation = Quaternion.Euler(30f, eulers.y, 0f);
         mainCamera.transform.position = new Vector3(pos.x, pos.y, pos.z);
 
-
-
-        /*
-        hor = Mathf.Lerp(hor, Input.GetAxis("Mouse X"), 6f*sensitivity);
-        ver = Mathf.Lerp(ver, Input.GetAxis("Mouse Y"), 6f*sensitivity);
-
-        gyro.transform.Rotate(new Vector3(ver*-1f, hor, 0f));
-        transform.rotation = Quaternion.Slerp(transform.rotation, gyro.rotation, .5f);
-
-        if (Input.GetKey(KeyCode.W))
+        float maxSpeed = moveSpeed;
+        if (rb.velocity.magnitude > maxSpeed)
         {
-            rb.AddForce(transform.forward * moveSpeed, ForceMode.Acceleration);
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            rb.AddForce(transform.forward * -1f * moveSpeed, ForceMode.Acceleration);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            rb.AddForce(transform.right * -1f * moveSpeed, ForceMode.Acceleration);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            rb.AddForce(transform.right * moveSpeed, ForceMode.Acceleration);
-        }
-        if (Input.GetKey(KeyCode.Space))
-        {
-            rb.AddForce(Vector3.up* moveSpeed, ForceMode.Acceleration);
-        }
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            rb.AddForce(Vector3.up * -1f * moveSpeed, ForceMode.Acceleration);
-        }
-        */
-
-        if (rb.velocity.magnitude > 20f)
-        {
-            rb.velocity = rb.velocity.normalized * 20f;
+            rb.velocity = rb.velocity.normalized * maxSpeed;
         }
         
 

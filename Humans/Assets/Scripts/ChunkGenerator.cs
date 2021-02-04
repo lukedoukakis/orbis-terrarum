@@ -240,8 +240,8 @@ public class ChunkGenerator : MonoBehaviour
             {
 
                 // TemperatureMap
-                temperatureValue = .3f + Mathf.PerlinNoise((x + xOffset + seed + .01f) / temperatureMapScale, (z + zOffset + seed + .01f) / temperatureMapScale);
-                temperatureValue = Mathf.Clamp(temperatureValue, 0f, 1f);
+                temperatureValue = Mathf.PerlinNoise((x + xOffset + seed + .01f) / temperatureMapScale, (z + zOffset + seed + .01f) / temperatureMapScale);
+                temperatureValue = Mathf.InverseLerp(0f, .7f, temperatureValue);
 
                 // -------------------------------------------------------
 
@@ -266,6 +266,7 @@ public class ChunkGenerator : MonoBehaviour
                 freshWaterValue = Mathf.PerlinNoise((x + xOffset - seed + .01f) / riverWindingScale, (z + zOffset - seed + .01f) / riverWindingScale) * 2f - 1f;
                 rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 10f, (z + zOffset + .01f) / 10f) + .5f, .3f) - 1f;
                 freshWaterValue += rough;
+                freshWaterValue -= Mathf.PerlinNoise((x + xOffset + .01f) / elevationMapScale, (z + zOffset + .01f) / elevationMapScale)/2f;
                 freshWaterValue = Mathf.Abs(freshWaterValue);
                 freshWaterValue *= -1f;
                 freshWaterValue += 1f;
@@ -276,7 +277,7 @@ public class ChunkGenerator : MonoBehaviour
                 }
                 else
                 {
-                    freshWaterValue = Mathf.InverseLerp(.5f, .88f, freshWaterValue);
+                    freshWaterValue = Mathf.InverseLerp(.1f, .85f, freshWaterValue);
                 }
                 // GOOD FOR CREATING LARGE LAKES AND INLETS FOR WETLAND AREA
                 /*
@@ -300,14 +301,20 @@ public class ChunkGenerator : MonoBehaviour
                 // WetnessMap
                 if (elevationValue >= 0f)
                 {
-                    wetnessValue = Mathf.PerlinNoise((float)((z + zOffset + seed + 5000) / wetnessMapScale + .01f), (float)((x + xOffset + seed + 5000) / wetnessMapScale + .01f));
-                    wetnessValue += freshWaterValue / 5f;
-                    wetnessValue = Mathf.Clamp(wetnessValue, 0f, 1f);
-                    wetnessValue = Mathf.InverseLerp(.37f, .63f, wetnessValue);
+
+                    wetnessValue = Mathf.Max(freshWaterValue, mountainValue-.3f);
+                    //wetnessValue *= Mathf.PerlinNoise((x + xOffset - seed + .01f) / elevationMapScale, (z + zOffset - seed + .01f) / elevationMapScale);
+
+
+                    //wetnessValue = Mathf.Clamp(wetnessValue, Mathf.InverseLerp(.6f, 1f, mountainValue), 1f);
+
+                    
+
+                    //wetnessValue = Mathf.InverseLerp(.37f, .63f, wetnessValue);
                 }
                 else
                 {
-                    wetnessValue = 1f;
+                    wetnessValue = -1f;
                 }
 
                 // -------------------------------------------------------
@@ -404,14 +411,11 @@ public class ChunkGenerator : MonoBehaviour
                 // -------------------------------------------------------
 
                 // TreeMap
-                treeValue = false;
-                if (heightValue >= treeLevel)
+                if(wetnessValue != -1)
                 {
-                    if (freshWaterValue < 1f)
-                    {
-                        treeValue = true;
-                    }
+                    treeValue = true;
                 }
+                else { treeValue = false; }
 
                 // -------------------------------------------------------
 
@@ -426,8 +430,6 @@ public class ChunkGenerator : MonoBehaviour
             }
         }
 
-
-        //yield return null;
     }
 
 
@@ -521,58 +523,63 @@ public class ChunkGenerator : MonoBehaviour
 
     void PlaceTrees()
     {
-        
-        foreach (Transform child in treeParent.transform)
-        {
-            GameObject.Destroy(child.gameObject);
-        }
-        
+       
 
         GameObject[][] treesSelection = new GameObject[][] { null, treesCactus, treesPalm, treesJungle, treesDeciduous, treesFir, treesSnowyFir };
         float[] treeScales = new float[] { -1f, .1f, .05f, .1f, .09f, .05f, .05f };
-        int[] passesMultipliers = new int[] { -1, 1, 2, 20, 20, 20, 20 };
+        int[] passesMultipliers = new int[] { -1, 1, 2, 10, 10, 10, 10 };
         float[] treeMinYNormals = new float[] { -1f, .7f, .7f, .7f, .7f, .7f, .7f };
+
         for (int z = 0; z < chunkSize + 1; z++)
         {
             for (int x = 0; x < chunkSize + 1; x++)
             {
                 int biomeType = Biome.GetBiomeType(TemperatureMap[x, z], WetnessMap[x, z], HeightMap[x, z], FreshWaterMap[x, z]);
-                int index;
-                switch (biomeType)
+                
+                // tree placement
+                if (TreeMap[x, z])
                 {
-                    case (int)Biome.BiomeType.Plains: index = 0; break;
-                    case (int)Biome.BiomeType.Desert: index = 1; break;
-                    case (int)Biome.BiomeType.Floodplain: index = 2; break;
-                    case (int)Biome.BiomeType.Jungle: index = 3; break;
-                    case (int)Biome.BiomeType.Forest: index = 4; break;
-                    case (int)Biome.BiomeType.Taiga: index = 5; break;
-                    case (int)Biome.BiomeType.SnowyTaiga: index = 6; break;
-                    default: index = -1; break;
-                }
-                   
-                if (index > 0) {
-
-                    GameObject[] _trees = treesSelection[index];
-                    float treeScale = treeScales[index];
-                    int passesMultipler = passesMultipliers[index];
-                    float treeMinYNormal = treeMinYNormals[index];
-
-                    int passes = (int)(WetnessMap[x, z] * passesMultipler);
-                    for (int j = 0; j < treeDensity * passes; j++)
+                    int index;
+                    switch (biomeType)
                     {
-                        if (Physics.Raycast(new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, elevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10), Vector3.down, out RaycastHit hit, elevationAmplitude - (waterLevel * elevationAmplitude)))
+                        case (int)Biome.BiomeType.Plains: index = 0; break;
+                        case (int)Biome.BiomeType.Desert: index = 1; break;
+                        case (int)Biome.BiomeType.Swamp: index = 2; break;
+                        case (int)Biome.BiomeType.Jungle: index = 3; break;
+                        case (int)Biome.BiomeType.Forest: index = 4; break;
+                        case (int)Biome.BiomeType.Taiga: index = 5; break;
+                        case (int)Biome.BiomeType.SnowyTaiga: index = 6; break;
+                        default: index = -1; break;
+                    }
+                    if (index > 0)
+                    {
+
+                        GameObject[] _trees = treesSelection[index];
+                        float treeScale = treeScales[index];
+                        int passesMultipler = passesMultipliers[index];
+                        float treeMinYNormal = treeMinYNormals[index];
+
+                        int passes = (int)(WetnessMap[x, z] * passesMultipler);
+                        for (int j = 0; j < treeDensity * passes; j++)
                         {
-                            Vector3 point = hit.point;
-                            if (hit.normal.y > treeMinYNormal && point.y > 50f * flatLevel)
+
+
+                            
+                            Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, elevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
+                            if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, elevationAmplitude - (waterLevel * elevationAmplitude)))
                             {
-                                GameObject t = GameObject.Instantiate(_trees[x % _trees.Length], point, Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up) * Quaternion.FromToRotation(transform.up, Vector3.Lerp(hit.normal, Vector3.up, .5f)), treeParent.transform);
-                                   
-                                t.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
+                                Vector3 point = hit.point;
+                                bool xn = hit.normal.x > 0f;
+                                if (hit.normal.y > treeMinYNormal)
+                                {
+                                    GameObject t = GameObject.Instantiate(_trees[x % _trees.Length], point, Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up) * Quaternion.FromToRotation(transform.up, Vector3.Lerp(hit.normal, Vector3.up, .5f)), treeParent.transform);
+                                    t.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
+                                }
                             }
+                            
                         }
                     }
                 }
-                
             } 
         }
     }
