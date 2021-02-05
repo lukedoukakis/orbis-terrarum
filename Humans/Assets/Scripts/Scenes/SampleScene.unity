@@ -594,7 +594,7 @@ MonoBehaviour:
     type: 3}
   elevationMapScale: 400
   riverMapScale: 20
-  wetnessMapScale: 150
+  wetnessMapScale: 100
   temperatureMapScale: 400
   chunkRenderDistance: 4
   chunkSize: 20
@@ -605,7 +605,7 @@ MonoBehaviour:
   lacunarity: 1.5
   elevationAmplitude: 120
   flatLevel: 0.8
-  waterLevel: 0.795
+  waterLevel: 0.7965
   treeLevel: 0.8
   treeDensity: 1
   treeRandomness: 0.5

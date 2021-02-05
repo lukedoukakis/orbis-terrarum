@@ -50,7 +50,7 @@ public class Biome : MonoBehaviour
         new int[]{dry},
 
         // height
-        new int[]{low},
+        new int[]{low, mid},
 
         // fresh water requirement
         new int[]{noFresh}
@@ -184,9 +184,9 @@ public class Biome : MonoBehaviour
             t = cold;
         }
 
-        if (wetness > .3f)
+        if (wetness > .5f)
         {
-            if (wetness > .7f)
+            if (wetness > .8f)
             {
                 w = wet;
             }
@@ -258,6 +258,13 @@ public class Biome : MonoBehaviour
                 break;
             }
         }
+
+        /*
+        if(biome == (int)BiomeType.Desert)
+        {
+            Debug.Log("DESERT");
+        }
+        */
 
         return biome;
 
