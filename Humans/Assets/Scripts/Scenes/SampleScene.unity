@@ -592,7 +592,7 @@ MonoBehaviour:
   cameraT: {fileID: 963194228}
   chunkPrefab: {fileID: 2854202466093326487, guid: 3b2ccdcd009fcc04bb6cee6704c61cba,
     type: 3}
-  elevationMapScale: 400
+  elevationMapScale: 800
   riverMapScale: 20
   wetnessMapScale: 100
   temperatureMapScale: 400

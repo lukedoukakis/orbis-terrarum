@@ -50,7 +50,7 @@ public class Biome : MonoBehaviour
         new int[]{dry},
 
         // height
-        new int[]{low, mid},
+        new int[]{low},
 
         // fresh water requirement
         new int[]{noFresh}
@@ -81,7 +81,7 @@ public class Biome : MonoBehaviour
         new int[]{wet},
 
         // height
-        new int[]{low, mid},
+        new int[]{low},
 
         // fresh water requirement
         new int[]{fresh, noFresh}
@@ -251,13 +251,17 @@ public class Biome : MonoBehaviour
         }
 
         int biome = -1;
+        int n = 0;
         for(int i = 0; i < blackList.Length; i++)
         {
             if(!blackList[i]) {
+                n++;
                 biome = i;
                 break;
             }
         }
+
+        //Debug.Log(n);
 
         /*
         if(biome == (int)BiomeType.Desert)

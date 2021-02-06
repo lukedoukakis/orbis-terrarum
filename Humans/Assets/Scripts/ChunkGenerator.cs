@@ -239,6 +239,9 @@ public class ChunkGenerator : MonoBehaviour
 
                 // TemperatureMap
                 temperatureValue = Mathf.PerlinNoise((x + xOffset + seed + .01f) / temperatureMapScale, (z + zOffset + seed + .01f) / temperatureMapScale);
+                rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 30f, (z + zOffset + .01f) / 30f) + .5f, .3f) - 1f;
+                temperatureValue += rough;
+
                 temperatureValue = Mathf.InverseLerp(0f, .7f, temperatureValue);
 
                 // -------------------------------------------------------
@@ -252,9 +255,17 @@ public class ChunkGenerator : MonoBehaviour
                 elevationValue = Mathf.Pow(Mathf.PerlinNoise((x + xOffset - seed + .01f) / elevationMapScale, (z + zOffset - seed + .01f) / elevationMapScale) + .5f, .5f) - 1f;
                 if (elevationValue < 0f)
                 {
-                    rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 10f, (z + zOffset + .01f) / 10f) + .5f, .3f) - 1f;
-                    rough *= 1f - MountainMap[x, z];
-                    elevationValue += rough;
+                    if(mountainValue > .5f)
+                    {
+                        elevationValue = 0f;
+                    }
+                    else
+                    {
+                        rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 10f, (z + zOffset + .01f) / 10f) + .5f, .3f) - 1f;
+                        //rough *= 1f - MountainMap[x, z];
+                        elevationValue += rough;
+                    }
+                 
                 }
 
                 // -------------------------------------------------------
@@ -276,7 +287,7 @@ public class ChunkGenerator : MonoBehaviour
                 else
                 {
                     freshWaterValue = Mathf.InverseLerp(0f, .85f, freshWaterValue);
-                    freshWaterValue = Mathf.Pow(freshWaterValue, 7f);
+                    freshWaterValue = Mathf.Pow(freshWaterValue, 7f*temperatureValue);
                 }
                 // GOOD FOR CREATING LARGE LAKES AND INLETS FOR WETLAND AREA
                 /*
@@ -300,6 +311,13 @@ public class ChunkGenerator : MonoBehaviour
                 // WetnessMap
                 //wetnessValue = Mathf.PerlinNoise((x + xOffset - seed + .01f) / wetnessMapScale, (z + zOffset - seed + .01f) / wetnessMapScale) * 2f - 1f;
                 wetnessValue = freshWaterValue;
+                if(freshWaterValue < .9f)
+                {
+                    if (elevationValue < .02f)
+                    {
+                        wetnessValue = .9f;
+                    }
+                }
 
 
                 // -------------------------------------------------------
@@ -340,7 +358,7 @@ public class ChunkGenerator : MonoBehaviour
                 }
                 else if (heightValue > flatLevel)
                 {
-                    tMod = 1f + Mathf.InverseLerp(.5f, 1f, temperatureValue);
+                    tMod = 1f + Mathf.InverseLerp(.5f, .75f, temperatureValue);
                     heightValue = Mathf.Lerp(heightValue, flatLevel, (1f - mountainValue) * tMod);
                 }
 
@@ -391,7 +409,16 @@ public class ChunkGenerator : MonoBehaviour
                 }
 
                 // create slight roughness in terrain
-                heightValue += .005f * Mathf.PerlinNoise((x + xOffset - seed + .01f) / 2f, (z + zOffset - seed + .01f) / 2f);
+                if(Biome.GetBiomeType(temperatureValue, wetnessValue, heightValue, freshWaterValue) == (int)Biome.BiomeType.Desert)
+                {
+                    heightValue += .0016f * (Mathf.Sin((x + xOffset - seed + .01f) / .025f) * Mathf.Sin((z + zOffset - seed + .01f) / 2f));
+                }
+                else
+                {
+                    heightValue += .005f * Mathf.PerlinNoise((x + xOffset - seed + .01f) / 2f, (z + zOffset - seed + .01f) / 2f);
+                }
+
+                
 
                 // -------------------------------------------------------
 
@@ -449,8 +476,12 @@ public class ChunkGenerator : MonoBehaviour
         temp = temperature + .3f;
         temp = Mathf.Abs(1f - temp);
         temp = Mathf.Pow(temp, 2f);
-        
-        c.r = 255f * wet;
+
+        // wetness
+        c.g = 255f * wet * Mathf.Pow(temp, .1f);
+
+        // desert yellow (add red)
+        c.r = 255f * Mathf.Min(temperature, 1f - wetness);
         return c;
     }
 
@@ -530,7 +561,7 @@ public class ChunkGenerator : MonoBehaviour
         GameObject[][] treesSelection = new GameObject[][] { null, treesCactus, treesPalm, treesJungle, treesDeciduous, treesFir, treesSnowyFir };
         float[] treeScales = new float[] { -1f, .1f, .05f, .1f, .09f, .05f, .05f };
         int[] passesMultipliers = new int[] { -1, 1, 2, 10, 10, 10, 10 };
-        float[] treeMinYNormals = new float[] { -1f, .7f, .7f, .7f, .7f, .7f, .7f };
+        float[] treeMinYNormals = new float[] { -1f, .97f, .7f, .7f, .7f, .7f, .7f };
 
         for (int z = 0; z < chunkSize + 1; z++)
         {
@@ -562,7 +593,7 @@ public class ChunkGenerator : MonoBehaviour
                         float treeMinYNormal = treeMinYNormals[index];
 
                         int passes = (int)(WetnessMap[x, z] * passesMultipler);
-                        //passes = Mathf.Clamp(passes, 1, passes);
+                        passes = Mathf.Clamp(passes, 1, passes);
                         for (int j = 0; j < treeDensity * passes; j++)
                         {
 
