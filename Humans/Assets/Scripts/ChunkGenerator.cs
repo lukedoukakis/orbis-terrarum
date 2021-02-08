@@ -6,8 +6,15 @@ using System;
 public class ChunkGenerator : MonoBehaviour
 {
 
+    public static int chunkSize = 30;
+    public static int chunkRenderDistance = 4;
+
     public Transform cameraT;
-    public static Vector2 currentChunkCoord;
+    public Vector3 cameraPos;
+    public Vector2 cameraPos_chunkSpace;
+    public Vector2 currentChunkCoord;
+   
+
     public GameObject chunkPrefab;
     GameObject chunk;
     Mesh mesh;
@@ -17,8 +24,8 @@ public class ChunkGenerator : MonoBehaviour
     int xOffset;
     int zOffset;
 
-    List<ChunkData> ChunkDataToLoad;
-    List<ChunkData> ChunkDataLoaded;
+    static List<ChunkData> ChunkDataToLoad;
+    static List<ChunkData> ChunkDataLoaded;
 
     Vector3[] vertices;
     int[] triangles;
@@ -38,8 +45,6 @@ public class ChunkGenerator : MonoBehaviour
     float[,] HeightMap;
     bool[,] TreeMap;
 
-    public int chunkRenderDistance;
-    public int chunkSize;
     public int seed;
     public float scale;
     public int octaves;
@@ -101,22 +106,14 @@ public class ChunkGenerator : MonoBehaviour
     {
 
         
-        Vector3 cameraPos = cameraT.position; cameraPos.y = 0f;
-        Vector2 cameraPos_chunkSpace = new Vector2(cameraPos.x / chunkSize, cameraPos.z / chunkSize);
-        Vector2 c = new Vector2(Mathf.Floor(cameraPos_chunkSpace.x), Mathf.Floor(cameraPos_chunkSpace.y));
-        if (c.Equals(currentChunkCoord)){
-            //return;
-        }
+        cameraPos = cameraT.position; cameraPos.y = 0f;
+        cameraPos_chunkSpace = ToChunkSpace(cameraPos);
+        currentChunkCoord = new Vector2(Mathf.Floor(cameraPos_chunkSpace.x), Mathf.Floor(cameraPos_chunkSpace.y));
 
-        currentChunkCoord = c;
 
         // get neighbor chunk coordinates
         Vector2 halfVec = Vector3.one/2f;
-
-
-
         Vector2[] neighborChunkCoords = new Vector2[(int)Mathf.Pow(chunkRenderDistance*2, 2)];
-
         int i = 0;
         for (int z = (int)currentChunkCoord.y-chunkRenderDistance; z < (int)currentChunkCoord.y+chunkRenderDistance; z++)
         {
@@ -196,7 +193,6 @@ public class ChunkGenerator : MonoBehaviour
 
         
         GenerateTerrain();
-        /*
         cd.TemperatureMap = TemperatureMap;
         cd.MountainMap = MountainMap;
         cd.ElevationMap = ElevationMap;
@@ -204,11 +200,9 @@ public class ChunkGenerator : MonoBehaviour
         cd.WetnessMap = WetnessMap;
         cd.HeightMap = HeightMap;
         cd.TreeMap = TreeMap;
-        */
+
         PlaceTerrain();
         PlaceTrees();
-
-
         GenerateWater(cd.sea, WaterTilePrefab, xOffset, zOffset);
 
     }
@@ -597,8 +591,6 @@ public class ChunkGenerator : MonoBehaviour
                         for (int j = 0; j < treeDensity * passes; j++)
                         {
 
-
-                            
                             Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, elevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
                             if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, elevationAmplitude - (waterLevel * elevationAmplitude)))
                             {
@@ -610,7 +602,7 @@ public class ChunkGenerator : MonoBehaviour
                                     t.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
                                 }
                             }
-                            
+
                         }
                     }
                 }
@@ -653,11 +645,33 @@ public class ChunkGenerator : MonoBehaviour
     }
 
 
-    private void OnValidate()
-    {
-        if(lacunarity < 1) { lacunarity = 1; }
-        if(octaves < 0) { octaves = 0; }
 
+    // returns given position translated to chunk coordinates, based on chunkSize
+    public static Vector2 ToChunkSpace(Vector3 position)
+    {
+        return new Vector2(position.x / (chunkSize+1), position.z / (chunkSize+1));
+    }
+
+    public static ChunkData GetChunk(Vector2 chunkCoord)
+    {
+        //Debug.Log(chunkCoord);
+        foreach (ChunkData cd in ChunkDataLoaded.ToArray())
+        {
+            if (cd.coord == chunkCoord)
+            {
+                return cd;
+            }
+        }
+        Debug.Log("ChunkGenerator: chunk from given position is not loaded!");
+        return null;
+    }
+
+    // retrieves ChunkData in ChunkDataLoaded associated with the raw position given
+    public static ChunkData GetChunk(Vector3 position)
+    {
+        Vector2 position_chunkSpace = ToChunkSpace(position);
+        Vector2 chunkCoord = new Vector2((int)position_chunkSpace.x, (int)(position_chunkSpace.y));
+        return GetChunk(chunkCoord);
     }
 
 }

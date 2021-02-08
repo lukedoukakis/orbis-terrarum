@@ -5,8 +5,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
 
-    public Camera mainCamera;
-    public Transform gyro;
+    public Camera MainCamera;
 
     Rigidbody rb;
     [SerializeField] float moveSpeed;
@@ -27,8 +26,8 @@ public class CameraController : MonoBehaviour
 
 
 
-        mainCamera.transform.position = new Vector3(Random.Range(-1000f, 1000f), 0f, Random.Range(-1000f, 1000f)) + Vector3.up * 100f;
-        mainCamera.transform.rotation = Quaternion.Euler(25f, 45f, 0f);
+        MainCamera.transform.position = new Vector3(Random.Range(-1000f, 1000f), 0f, Random.Range(-1000f, 1000f)) + Vector3.up * 100f;
+        MainCamera.transform.rotation = Quaternion.Euler(25f, 45f, 0f);
     }
 
     void FixedUpdate()
@@ -60,23 +59,29 @@ public class CameraController : MonoBehaviour
             rb.AddForce(Vector3.up * -1f * moveSpeed / 2f, ForceMode.Acceleration);
         }
 
+        /*
         float rotX = Input.GetAxis("Mouse X");
         if(Mathf.Abs(rotX) > 0f)
         {
             mainCamera.transform.Rotate(Vector3.up * rotX * sensitivity * 50f*Time.deltaTime);
         }
-        /*
+        
         float rotY = Input.GetAxis("Mouse Y");
         if (Mathf.Abs(rotY) > 0f)
         {
-            mainCamera.transform.Rotate(Vector3.forward * rotY);
+            mainCamera.transform.Rotate(Vector3.forward * rotY * sensitivity * 50f * Time.deltaTime);
         }
         */
+        float h = 1f * Input.GetAxis("Mouse X");
+        float v = -1f * Input.GetAxis("Mouse Y");
+
+        MainCamera.transform.Rotate(v, h, 0);
 
         Vector3 eulers = transform.rotation.eulerAngles;
-        Vector3 pos = mainCamera.transform.position;
-        mainCamera.transform.rotation = Quaternion.Euler(30f, eulers.y, 0f);
-        mainCamera.transform.position = new Vector3(pos.x, pos.y, pos.z);
+        Vector3 pos = MainCamera.transform.position;
+        //mainCamera.transform.rotation = Quaternion.Euler(30f, eulers.y, 0f);
+        MainCamera.transform.rotation = Quaternion.Euler(eulers.x, eulers.y, 0f);
+        MainCamera.transform.position = new Vector3(pos.x, pos.y, pos.z);
 
         float maxSpeed = moveSpeed;
         if (rb.velocity.magnitude > maxSpeed)
