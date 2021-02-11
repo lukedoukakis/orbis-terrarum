@@ -435,7 +435,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 963194227}
-  moveSpeed: 20
+  moveSpeed: 7
   sensitivity: 2
 --- !u!114 &963194230
 MonoBehaviour:
@@ -633,7 +633,6 @@ MonoBehaviour:
   octaves: 30
   persistance: 0.65
   lacunarity: 1.5
-  elevationAmplitude: 120
   flatLevel: 0.8
   waterLevel: 0.7965
   treeLevel: 0.8
@@ -645,6 +644,8 @@ MonoBehaviour:
   - {fileID: 3539670111171639436, guid: 14fe6c36ebf9412488b327374464851b, type: 3}
   treesJungle:
   - {fileID: 4044890578349436020, guid: 3105ad087b294474d90654acfe6c649e, type: 3}
+  treesPlains:
+  - {fileID: 71877759641319625, guid: 16c863e05d7f4624486a9a2123824639, type: 3}
   treesDeciduous:
   - {fileID: 3922741978623822371, guid: 26aea41d78f61a746b41925bc28f80eb, type: 3}
   treesFir:

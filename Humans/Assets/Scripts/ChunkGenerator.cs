@@ -7,7 +7,8 @@ public class ChunkGenerator : MonoBehaviour
 {
 
     public static int chunkSize = 30;
-    public static int chunkRenderDistance = 4;
+    public static int chunkRenderDistance = 2;
+    public static float ElevationAmplitude = 120;
 
     public Transform cameraT;
     public Vector3 cameraPos;
@@ -51,14 +52,13 @@ public class ChunkGenerator : MonoBehaviour
     [Range(0, 1)] public float persistance;
     public float lacunarity;
 
-    public float elevationAmplitude;
     public float flatLevel;
     public float waterLevel;
     public float treeLevel;
 
 
     // feature restrictions
-    [Range(1, 10)] public int treeDensity;
+    [Range(0f, 1f)] public float treeDensity;
     [Range(.5f, 1.5f)] public float treeRandomness;
 
 
@@ -67,6 +67,7 @@ public class ChunkGenerator : MonoBehaviour
     [SerializeField] GameObject[] treesCactus;
     [SerializeField] GameObject[] treesPalm;
     [SerializeField] GameObject[] treesJungle;
+    [SerializeField] GameObject[] treesPlains;
     [SerializeField] GameObject[] treesDeciduous;
     [SerializeField] GameObject[] treesFir;
     [SerializeField] GameObject[] treesSnowyFir;
@@ -388,7 +389,8 @@ public class ChunkGenerator : MonoBehaviour
                     {
                         if (freshWaterValue == 1f)
                         {
-                            heightValue = Mathf.Lerp(heightValue, waterLevel - .01f, freshWaterValue);
+                            //heightValue = Mathf.Lerp(heightValue, waterLevel - .01f, freshWaterValue);
+                            heightValue = waterLevel - .01f;
                         }
                         else
                         {
@@ -496,7 +498,7 @@ public class ChunkGenerator : MonoBehaviour
             for (int x = 0; x < chunkSize + 2; x++)
             {
                 float y = HeightMap[x, z];
-                y *= elevationAmplitude;
+                y *= ElevationAmplitude;
                 vertices[i] = new Vector3(x + xOffset, y, z + zOffset);
                 colors[i] = SetVertexColor(TemperatureMap[x, z], WetnessMap[x, z]);
                 i++;
@@ -552,10 +554,11 @@ public class ChunkGenerator : MonoBehaviour
     {
        
 
-        GameObject[][] treesSelection = new GameObject[][] { null, treesCactus, treesPalm, treesJungle, treesDeciduous, treesFir, treesSnowyFir };
-        float[] treeScales = new float[] { -1f, .1f, .05f, .1f, .09f, .05f, .05f };
-        int[] passesMultipliers = new int[] { -1, 1, 2, 10, 10, 10, 10 };
-        float[] treeMinYNormals = new float[] { -1f, .97f, .7f, .7f, .7f, .7f, .7f };
+        GameObject[][] treesSelection = new GameObject[][] { treesPlains, treesCactus, treesPalm, treesJungle, treesDeciduous, treesFir, treesSnowyFir };
+        float[] treeScales = new float[] { .06f, .1f, .05f, .1f, .09f, .05f, .05f };
+        int[] treePassesMultipliers = new int[] { 1, 1, 2, 10, 10, 10, 10 };
+        float[] treeMinYNormals = new float[] { .99f, .99f, .7f, .7f, .7f, .7f, .7f };
+        float[] treeAngleMultipliers = new float[] { 0f, 0f, .25f, .5f, .5f, .1f, .1f };
 
         for (int z = 0; z < chunkSize + 1; z++)
         {
@@ -578,27 +581,33 @@ public class ChunkGenerator : MonoBehaviour
                         case (int)Biome.BiomeType.SnowyTaiga: index = 6; break;
                         default: index = -1; break;
                     }
-                    if (index > 0)
+                    if (index >= 0)
                     {
 
                         GameObject[] _trees = treesSelection[index];
                         float treeScale = treeScales[index];
-                        int passesMultipler = passesMultipliers[index];
+                        int passesMultipler = treePassesMultipliers[index];
                         float treeMinYNormal = treeMinYNormals[index];
+                        float treeAngleMultiplier = treeAngleMultipliers[index];
+                        Quaternion uprightRot;
+                        Quaternion slantedRot;
 
-                        int passes = (int)(WetnessMap[x, z] * passesMultipler);
+                        int passes = (int)(WetnessMap[x, z] * passesMultipler * treeDensity);
                         passes = Mathf.Clamp(passes, 1, passes);
                         for (int j = 0; j < treeDensity * passes; j++)
                         {
 
-                            Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, elevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
-                            if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, elevationAmplitude - (waterLevel * elevationAmplitude)))
+                            Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
+                            if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, ElevationAmplitude - (waterLevel * ElevationAmplitude)))
                             {
                                 Vector3 point = hit.point;
                                 bool xn = hit.normal.x > 0f;
                                 if (hit.normal.y > treeMinYNormal)
                                 {
-                                    GameObject t = GameObject.Instantiate(_trees[x % _trees.Length], point, Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up) * Quaternion.FromToRotation(transform.up, Vector3.Lerp(hit.normal, Vector3.up, .5f)), treeParent.transform);
+
+                                    uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
+                                    slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
+                                    GameObject t = GameObject.Instantiate(_trees[x % _trees.Length], point, Quaternion.Slerp(uprightRot, slantedRot, treeAngleMultiplier), treeParent.transform);
                                     t.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
                                 }
                             }
@@ -629,7 +638,7 @@ public class ChunkGenerator : MonoBehaviour
         {
             for (int z = 0; z < chunkSize / 2f; z++)
             {
-                placePos = new Vector3(x * 5 + xOffset, (waterLevel) * elevationAmplitude, z * 5 + zOffset);
+                placePos = new Vector3(x * 5 + xOffset, (waterLevel) * ElevationAmplitude, z * 5 + zOffset);
                 GameObject w = GameObject.Instantiate(waterUnit, placePos, Quaternion.identity, parent.transform);
             }
         }
@@ -640,7 +649,7 @@ public class ChunkGenerator : MonoBehaviour
     {
         BoxCollider bc = parent.AddComponent<BoxCollider>();
         bc.size = new Vector3(chunkSize, 4f, chunkSize);
-        bc.center = new Vector3(chunkSize / 2f, waterLevel * elevationAmplitude - bc.size.y / 2f, chunkSize / 2f);
+        bc.center = new Vector3(chunkSize / 2f, waterLevel * ElevationAmplitude - bc.size.y / 2f, chunkSize / 2f);
         bc.isTrigger = true;
     }
 

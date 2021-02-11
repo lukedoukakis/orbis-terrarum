@@ -11,6 +11,7 @@ public class AreaConditions
     static ChunkData OriginChunk;
     static int OriginX;
     static int OriginZ;
+    static float OriginHeight;
 
     public static float Height;
     public static float Temperature;
@@ -51,8 +52,9 @@ public class AreaConditions
         //Debug.Log(new Vector2(x, z).ToString());
 
         OriginChunk = chunk;
-        OriginX = x;
+        OriginX = x; 
         OriginZ = z;
+        OriginHeight = position.y / ChunkGenerator.ElevationAmplitude;
 
         SampleConditions();
 
@@ -70,6 +72,7 @@ public class AreaConditions
         Vector2 chunkCoord;
         int overflowX, overflowZ;
         int sampleX, sampleZ;
+        int rejects = 0;
 
         float hgt = 0;
         float tmp = 0;
@@ -108,6 +111,10 @@ public class AreaConditions
 
             for (int x = OriginX - AreaSize; x < OriginX + AreaSize; x++)
             {
+
+
+
+
                 // determine overflowX
                 if (x >= 0)
                 {
@@ -149,14 +156,15 @@ public class AreaConditions
 
                 // add data samples to pool
                 //Debug.Log(new Vector2(sampleX, sampleZ).ToString());
-                hgt += cd.HeightMap[sampleX, sampleZ];
+                float sampleHeight = cd.HeightMap[sampleX, sampleZ];
+                hgt += sampleHeight;
                 tmp += cd.TemperatureMap[sampleX, sampleZ];
                 wet += cd.WetnessMap[sampleX, sampleZ];
                 fw += cd.FreshWaterMap[sampleX, sampleZ];
             }
         }
 
-        float divisor = Mathf.Pow(AreaSize * 2, 2);
+        int divisor = (int)Mathf.Pow(AreaSize * 2, 2) - rejects;
         Height = hgt / divisor;
         Temperature = tmp / divisor;
         Wetness = wet / divisor;
