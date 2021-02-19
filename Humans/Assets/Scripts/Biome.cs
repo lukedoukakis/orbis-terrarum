@@ -5,233 +5,242 @@ using UnityEngine;
 public class Biome : MonoBehaviour
 {
 
+    public static bool initialized;
     public enum BiomeType
     {
         Desert,
-        Swamp,
+        Chaparral,
         Jungle,
+        Savannah,
         Plains,
+        Tundra,
         Forest,
         Taiga,
-        SnowyTaiga
+        SnowyTaiga,
+        Ocean
     }
-
-
-
-    // temp levels
-    static int cold = 0;
-    static int temperate = 1;
-    static int hot = 2;
-
-    // wetness levels
-    static int dry = 0;
-    static int damp = 1;
-    static int wet = 2;
-
-    // height levels
-    static int low = 0;
-    static int mid = 1;
-    static int high = 2;
-
-    // river levels
-    static int fresh = 0;
-    static int noFresh = 1;
 
 
     // --------------------------------------------------------------------
 
-
+    // condition definitions
     static int[][] DesertConditions = new int[][]
     {
         // temp
-        new int[]{hot},
+        new int[]{3, 4},
 
-        // wetness
-        new int[]{dry},
+        // humidity
+        new int[]{0},
 
-        // height
-        new int[]{low},
+        // elevation
+        new int[]{0, 1},
 
-        // fresh water requirement
-        new int[]{noFresh}
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
     };
 
-
-    static int[][] SwampConditions = new int[][]
+    static int[][] ChaparralConditions = new int[][]
     {
         // temp
-        new int[]{temperate, hot},
+        new int[]{3, 4},
 
-        // wetness
-        new int[]{wet},
+        // humidity
+        new int[]{0},
 
-        // height
-        new int[]{low},
+        // elevation
+        new int[]{2, 3, 4},
 
-        // fresh water requirement
-        new int[]{}
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
+    };
+
+    static int[][] PlainsConditions = new int[][]
+    {
+        // temp
+        new int[]{1, 2, 3, 4},
+
+        // humidity
+        new int[]{0, 1, 2},
+
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
+
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
+    };
+
+    static int[][] TundraConditions = new int[][]
+    {
+        // temp
+        new int[]{0},
+
+        // humidity
+        new int[]{0, 1, 2},
+
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
+
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
+    };
+
+    static int[][] SavannahConditions = new int[][]
+    {
+        // temp
+        new int[]{3, 4},
+
+        // humidity
+        new int[]{3},
+
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
+
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
     };
 
     static int[][] JungleConditions = new int[][]
     {
         // temp
-        new int[]{hot},
+        new int[]{3, 4},
 
-        // wetness
-        new int[]{wet},
+        // humidity
+        new int[]{4},
 
-        // height
-        new int[]{low},
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
 
-        // fresh water requirement
-        new int[]{fresh, noFresh}
-    };
-
-    
-
-    static int[][] PlainsConditions = new int[][]
-    {
-        // temp
-        new int[]{temperate},
-
-        // wetness
-        new int[]{dry},
-
-        // height
-        new int[]{low, mid, high},
-
-        // fresh water requirement
-        new int[]{fresh, noFresh}
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
     };
 
     static int[][] ForestConditions = new int[][]
     {
         // temp
-        new int[]{temperate},
+        new int[]{3},
 
-        // wetness
-        new int[]{damp, wet},
+        // humidity
+        new int[]{3, 4},
 
-        // height
-        new int[]{low, mid},
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
 
-        // fresh water requirement
-        new int[]{fresh, noFresh}
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
     };
 
     static int[][] TaigaConditions = new int[][]
     {
         // temp
-        new int[]{cold},
+        new int[]{1, 2},
 
-        // wetness
-        new int[]{damp, wet},
+        // humidity
+        new int[]{3, 4},
 
-        // height
-        new int[]{low, mid},
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
 
-        // fresh water requirement
-        new int[]{fresh, noFresh}
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
     };
 
     static int[][] SnowyTaigaConditions = new int[][]
     {
         // temp
-        new int[]{cold},
+        new int[]{0},
 
-        // wetness
-        new int[]{damp, wet},
+        // humidity
+        new int[]{3, 4},
 
-        // height
-        new int[]{high},
+        // elevation
+        new int[]{0, 1, 2, 3, 4},
 
-        // fresh water requirement
-        new int[]{fresh, noFresh}
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
+    };
+
+    static int[][] OceanConditions = new int[][]
+    {
+        // temp
+        new int[]{0, 1, 2, 3, 4},
+
+        // humidity
+        new int[]{0, 1, 2, 3, 4},
+
+        // elevation
+        new int[]{-1},
+
+        // mountain
+        new int[]{0, 1, 2, 3, 4}
     };
 
     static int[][][] BiomeConditions = new int[][][]
     {
         DesertConditions,
-        SwampConditions,
+        ChaparralConditions,
         JungleConditions,
+        SavannahConditions,
         PlainsConditions,
+        TundraConditions,
         ForestConditions,
         TaigaConditions,
-        SnowyTaigaConditions
+        SnowyTaigaConditions,
+        OceanConditions
     };
 
 
+    public static GameObject[][] TreePool;
 
-    public static int GetBiomeType(float temp, float wetness, float height, float freshWater)
+
+    static void Start()
+    {
+        //Init();
+    }
+
+    public static void Init()
+    {
+        string biomeName;
+        string path;
+        TreePool = new GameObject[10][];
+        for (int i = 0; i < TreePool.Length; i++)
+        {
+            biomeName = ((BiomeType)i).ToString();
+            path = "Terrain/" + biomeName + "/Trees";
+            TreePool[i] = Resources.LoadAll<GameObject>(path);
+            //Debug.Log(TreePool[i].Length);
+        }
+
+        //Debug.Log("initialized");
+        initialized = true;
+    }
+
+
+    public static int GetBiome(float temp, float humid, float elev, float mountain)
     {
 
-        int t, w, h, f;
-
-        // determine conditions
-        if (temp > .6f)
+        // transform parameters to integer [0, 4] (or -1) scale
+        float[] parameters = new float[] { temp, humid, elev, mountain };
+        int[] sampledTraits = new int[parameters.Length];
+        float p;
+        for(int i = 0; i < parameters.Length; i++)
         {
-            if (temp > .8f)
+            p = parameters[i];
+            if (p == -1f)
             {
-                t = hot;
+                sampledTraits[i] = -1;
             }
             else
             {
-                t = temperate;
+                float f = Mathf.Clamp(parameters[i], 0, .999f);
+                sampledTraits[i] = (int)(f * 5f);
             }
         }
-        else
-        {
-            t = cold;
-        }
 
-        if (wetness > .5f)
-        {
-            if (wetness > .8f)
-            {
-                w = wet;
-            }
-            else
-            {
-                w = damp;
-            }
-        }
-        else
-        {
-            w = dry;
-        }
-
-        if (height > .82f)
-        {
-            if (height > .84f)
-            {
-                h = high;
-            }
-            else
-            {
-                h = mid;
-            }
-        }
-        else
-        {
-            h = low;
-        }
-
-        if (freshWater > .93f)
-        {
-            f = fresh;
-        }
-        else
-        {
-            f = noFresh;
-        }
-
-
-        int[] targetTraits = new int[] { t, w, h, f };
+        // match the parameters to biome conditions find the biome
         bool[] blackList = new bool[BiomeConditions.Length];
-
-        for(int i = 0; i < targetTraits.Length; i++)
+        for(int i = 0; i < sampledTraits.Length; i++)
         {
-            int trait = targetTraits[i];
+            int trait = sampledTraits[i];
             for (int k = 0; k < BiomeConditions.Length; k++)
             {
                 if (!blackList[k])
@@ -261,17 +270,33 @@ public class Biome : MonoBehaviour
             }
         }
 
-        //Debug.Log(n);
-
         /*
-        if(biome == (int)BiomeType.Desert)
-        {
-            Debug.Log("DESERT");
-        }
+        //Debug.Log(n);
+        //Debug.Log(biome); 
         */
+
+        if(biome == -1)
+        {
+            Debug.Log("NO BIOME MATCHED\n" + sampledTraits[0] + " " + sampledTraits[1] + " " + sampledTraits[2] + " " + sampledTraits[3]);
+        }
+        
 
         return biome;
 
+    }
+
+    public static GameObject GetTree(int biomeType)
+    {
+        //Debug.Log(((BiomeType)biomeType).ToString());
+        GameObject[] trees = TreePool[biomeType];
+        if(trees.Length > 0)
+        {
+            return trees[Random.Range(0, trees.Length)];
+        }
+        else
+        {
+            return null;
+        }
     }
 
 

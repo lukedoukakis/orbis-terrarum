@@ -47,8 +47,8 @@ public class AreaConditions
         ChunkData chunk = ChunkGenerator.GetChunk(position);
         Vector2 position_chunkSpace = ChunkGenerator.ToChunkSpace(position);
 
-        int x = (int)(ChunkGenerator.chunkSize * Mathf.Abs((position_chunkSpace.x - chunk.coord.x)));
-        int z = (int)(ChunkGenerator.chunkSize * Mathf.Abs((position_chunkSpace.y - chunk.coord.y)));
+        int x = (int)(ChunkGenerator.ChunkSize * Mathf.Abs((position_chunkSpace.x - chunk.coord.x)));
+        int z = (int)(ChunkGenerator.ChunkSize * Mathf.Abs((position_chunkSpace.y - chunk.coord.y)));
         //Debug.Log(new Vector2(x, z).ToString());
 
         OriginChunk = chunk;
@@ -65,7 +65,7 @@ public class AreaConditions
     static void SampleConditions()
     {
 
-        int chunkSize = ChunkGenerator.chunkSize;
+        int chunkSize = ChunkGenerator.ChunkSize;
 
         // intermediate variables
         ChunkData cd;

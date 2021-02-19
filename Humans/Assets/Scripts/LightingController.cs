@@ -16,22 +16,26 @@ public class LightingController : MonoBehaviour
     Color ambientColor;
     float fog;
 
-    static float fog_base = .3f;
+    static float fog_base = .1f;
     static float changeSpeed_ambientColor = .5f;
     static float changeSpeed_fog = .5f;
 
-    static float period = .1f;
+    static float period = 1f;
     static float updateTime;
 
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if(Time.fixedTime >= updateTime)
+        if (Biome.initialized)
         {
-            UpdateLighting();
-            updateTime = Time.fixedTime + period;
+            if (Time.fixedTime >= updateTime)
+            {
+                UpdateLighting();
+                updateTime = Time.fixedTime + period;
+            }
         }
+        
         
     }
 
