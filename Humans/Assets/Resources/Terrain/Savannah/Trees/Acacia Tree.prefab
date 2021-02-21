@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 71877759641533667}
   - component: {fileID: 71877759640193313}
   - component: {fileID: 71877759639135593}
-  - component: {fileID: 4936326581793206527}
   m_Layer: 0
   m_Name: Acacia Tree
   m_TagString: Untagged
@@ -80,16 +79,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &4936326581793206527
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 71877759641319625}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89ea8e1de32ab2d4589f84f94551839d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: Acacia

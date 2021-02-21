@@ -10,7 +10,7 @@ public class TreeInfo : MonoBehaviour
 
 
 
-    public static Tuple<float, float, float, float> GetPlacementRequirements(string type)
+    public static Tuple<float, float, float, float> GetPlacementRequirements(string name, float wetness)
     {
         //Debug.Log("TreeInfo: type is: " + type);
 
@@ -19,51 +19,43 @@ public class TreeInfo : MonoBehaviour
         float normal;
         float slant;
 
-
-        /*
-        float[] treeScales = new float[] { -1f, .1f, .05f, .1f, .06f, .09f, .05f, .05f };
-        int[] treePassesMultipliers = new int[] { -1, 1, 2, 10, 1, 10, 10, 10 };
-        float[] treeMinYNormals = new float[] { -1f, .99f, .7f, .7f, .99f, .7f, .7f, .7f };
-        float[] treeAngleMultipliers = new float[] { -1f, 0f, .25f, .5f, .0f, .5f, .1f, .1f };
-        */
-        
-        switch (type)
+        switch (name)
         {
-            case "Acacia":
+            case "Acacia Tree":
                 scale = .05f;
+                density = .05f;
+                normal = .99f;
+                slant = 0f;
+                break;
+            case "Jungle Tree":
+                scale = .12f;
                 density = 1f;
                 normal = .7f;
                 slant = .5f;
                 break;
-            case "Jungle":
-                scale = .05f;
+            case "Fir Tree":
+                scale = .07f;
                 density = 1f;
                 normal = .7f;
-                slant = .5f;
+                slant = .18f;
                 break;
-            case "Fir":
-                scale = .05f;
+            case "Snowy Fir Tree":
+                scale = .07f;
                 density = 1f;
                 normal = .7f;
-                slant = .5f;
+                slant = .18f;
                 break;
-            case "Snowy Fir":
+            case "Palm Tree":
                 scale = .05f;
-                density = 1f;
-                normal = .7f;
-                slant = .5f;
+                density = .1f;
+                normal = .99f;
+                slant = 0f;
                 break;
-            case "Palm":
-                scale = .05f;
-                density = 1f;
+            case "Oak Tree":
+                scale = .08f;
+                density = .8f;
                 normal = .7f;
-                slant = .5f;
-                break;
-            case "Oak":
-                scale = .05f;
-                density = 1f;
-                normal = .7f;
-                slant = .5f;
+                slant = .18f;
                 break;
             default:
                 scale = -1f;
@@ -73,6 +65,7 @@ public class TreeInfo : MonoBehaviour
                 break;
         }
 
+        density *= (wetness + .5f);
 
         return Tuple.Create(scale, density, normal, slant);
 

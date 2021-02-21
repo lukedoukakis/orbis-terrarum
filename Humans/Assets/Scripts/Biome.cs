@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,7 @@ public class Biome : MonoBehaviour
 {
 
     public static bool initialized;
+
     public enum BiomeType
     {
         Desert,
@@ -27,7 +29,7 @@ public class Biome : MonoBehaviour
     static int[][] DesertConditions = new int[][]
     {
         // temp
-        new int[]{3, 4},
+        new int[]{4},
 
         // humidity
         new int[]{0},
@@ -42,7 +44,7 @@ public class Biome : MonoBehaviour
     static int[][] ChaparralConditions = new int[][]
     {
         // temp
-        new int[]{3, 4},
+        new int[]{4},
 
         // humidity
         new int[]{0},
@@ -87,10 +89,10 @@ public class Biome : MonoBehaviour
     static int[][] SavannahConditions = new int[][]
     {
         // temp
-        new int[]{3, 4},
+        new int[]{3},
 
         // humidity
-        new int[]{3},
+        new int[]{3, 4},
 
         // elevation
         new int[]{0, 1, 2, 3, 4},
@@ -102,10 +104,10 @@ public class Biome : MonoBehaviour
     static int[][] JungleConditions = new int[][]
     {
         // temp
-        new int[]{3, 4},
+        new int[]{4},
 
         // humidity
-        new int[]{4},
+        new int[]{3, 4},
 
         // elevation
         new int[]{0, 1, 2, 3, 4},
@@ -117,7 +119,7 @@ public class Biome : MonoBehaviour
     static int[][] ForestConditions = new int[][]
     {
         // temp
-        new int[]{3},
+        new int[]{1, 2, 3 },
 
         // humidity
         new int[]{3, 4},
@@ -126,13 +128,13 @@ public class Biome : MonoBehaviour
         new int[]{0, 1, 2, 3, 4},
 
         // mountain
-        new int[]{0, 1, 2, 3, 4}
+        new int[]{0, 1}
     };
 
     static int[][] TaigaConditions = new int[][]
     {
         // temp
-        new int[]{1, 2},
+        new int[]{1, 2, 3},
 
         // humidity
         new int[]{3, 4},
@@ -141,7 +143,7 @@ public class Biome : MonoBehaviour
         new int[]{0, 1, 2, 3, 4},
 
         // mountain
-        new int[]{0, 1, 2, 3, 4}
+        new int[]{2, 3, 4}
     };
 
     static int[][] SnowyTaigaConditions = new int[][]
@@ -192,11 +194,6 @@ public class Biome : MonoBehaviour
     public static GameObject[][] TreePool;
 
 
-    static void Start()
-    {
-        //Init();
-    }
-
     public static void Init()
     {
         string biomeName;
@@ -231,7 +228,17 @@ public class Biome : MonoBehaviour
             }
             else
             {
-                float f = Mathf.Clamp(parameters[i], 0, .999f);
+                float f;
+
+                // if parameter is elevation, use alternate scale
+                if(i == 2)
+                {
+                    f = Mathf.Clamp(parameters[i], ChunkGenerator.MinElevation, ChunkGenerator.MaxElevation);
+                }
+                else
+                {
+                    f = Mathf.Clamp(parameters[i], 0, .999f);
+                }
                 sampledTraits[i] = (int)(f * 5f);
             }
         }
@@ -270,31 +277,31 @@ public class Biome : MonoBehaviour
             }
         }
 
-        /*
+        
         //Debug.Log(n);
         //Debug.Log(biome); 
-        */
+        
 
         if(biome == -1)
         {
             Debug.Log("NO BIOME MATCHED\n" + sampledTraits[0] + " " + sampledTraits[1] + " " + sampledTraits[2] + " " + sampledTraits[3]);
         }
-        
-
         return biome;
 
     }
 
-    public static GameObject GetTree(int biomeType)
+    public static Tuple<GameObject, Tuple<float, float, float, float>> GetTree(int biomeType, float wetness)
     {
         //Debug.Log(((BiomeType)biomeType).ToString());
         GameObject[] trees = TreePool[biomeType];
         if(trees.Length > 0)
         {
-            return trees[Random.Range(0, trees.Length)];
+            GameObject tree = trees[UnityEngine.Random.Range(0, trees.Length)];
+            return Tuple.Create(tree, TreeInfo.GetPlacementRequirements(tree.name, wetness));
         }
         else
         {
+            //Debug.Log("GetTree(" + biomeType + "): returning null");
             return null;
         }
     }

@@ -436,7 +436,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 963194227}
   moveSpeed: 20
-  sensitivity: 2
+  sensitivity: 3
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -509,13 +509,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1098165268}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.008726558, z: 0, w: 0.999962}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2134817002}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 1, z: 0}
 --- !u!23 &1098165270
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -782,19 +782,18 @@ MonoBehaviour:
   WaterMeshFilter: {fileID: 1402622343}
   chunkPrefab: {fileID: 2854202466093326487, guid: 3b2ccdcd009fcc04bb6cee6704c61cba,
     type: 3}
-  waterAlpha: 0.75
+  waterAlpha: 0.9
   mountainMapScale: 800
   elevationMapScale: 800
   riverMapScale: 200
-  wetnessMapScale: 1600
   temperatureMapScale: 200
-  seed: 400
+  seed: 1
   scale: 60
   octaves: 30
   persistance: 0.65
   lacunarity: 1.5
   flatLevel: 0.8
-  seaLevel: 0.798
+  seaLevel: 0.797
   treeLevel: 0.8
   treeDensity: 1
   treeRandomness: 0.5

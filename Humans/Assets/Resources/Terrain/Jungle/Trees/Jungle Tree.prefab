@@ -11,8 +11,6 @@ GameObject:
   - component: {fileID: 4044890578349156446}
   - component: {fileID: 4044890578350415260}
   - component: {fileID: 4044890578351485396}
-  - component: {fileID: 8715333350904981629}
-  - component: {fileID: 1413356550834682155}
   m_Layer: 0
   m_Name: Jungle Tree
   m_TagString: Untagged
@@ -81,29 +79,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &8715333350904981629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4044890578349436020}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89ea8e1de32ab2d4589f84f94551839d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 
---- !u!114 &1413356550834682155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4044890578349436020}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89ea8e1de32ab2d4589f84f94551839d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: Jungle
