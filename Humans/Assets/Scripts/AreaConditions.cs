@@ -15,13 +15,13 @@ public class AreaConditions
 
     public static float Height;
     public static float Temperature;
-    public static float Wetness;
+    public static float Humidity;
     public static float FreshWater;
 
     // for instantiations
     public float height;
     public float temperature;
-    public float wetness;
+    public float humidity;
     public float freshWater;
 
 
@@ -36,7 +36,7 @@ public class AreaConditions
         SampleConditions();
         height = Height;
         temperature = Temperature;
-        wetness = Wetness;
+        humidity = Humidity;
         freshWater = FreshWater;
 
     }
@@ -47,8 +47,8 @@ public class AreaConditions
         ChunkData chunk = ChunkGenerator.GetChunk(position);
         Vector2 position_chunkSpace = ChunkGenerator.ToChunkSpace(position);
 
-        int x = (int)(ChunkGenerator.chunkSize * Mathf.Abs((position_chunkSpace.x - chunk.coord.x)));
-        int z = (int)(ChunkGenerator.chunkSize * Mathf.Abs((position_chunkSpace.y - chunk.coord.y)));
+        int x = (int)(ChunkGenerator.ChunkSize * Mathf.Abs((position_chunkSpace.x - chunk.coord.x)));
+        int z = (int)(ChunkGenerator.ChunkSize * Mathf.Abs((position_chunkSpace.y - chunk.coord.y)));
         //Debug.Log(new Vector2(x, z).ToString());
 
         OriginChunk = chunk;
@@ -56,7 +56,10 @@ public class AreaConditions
         OriginZ = z;
         OriginHeight = position.y / ChunkGenerator.ElevationAmplitude;
 
-        SampleConditions();
+        Temperature = chunk.TemperatureMap[x, z];
+        Humidity = chunk.HumidityMap[x, z];
+
+        //SampleConditions();
 
     }
 
@@ -65,7 +68,7 @@ public class AreaConditions
     static void SampleConditions()
     {
 
-        int chunkSize = ChunkGenerator.chunkSize;
+        int chunkSize = ChunkGenerator.ChunkSize;
 
         // intermediate variables
         ChunkData cd;
@@ -167,7 +170,7 @@ public class AreaConditions
         int divisor = (int)Mathf.Pow(AreaSize * 2, 2) - rejects;
         Height = hgt / divisor;
         Temperature = tmp / divisor;
-        Wetness = wet / divisor;
+        Humidity = wet / divisor;
         FreshWater = fw / divisor;
         
     }

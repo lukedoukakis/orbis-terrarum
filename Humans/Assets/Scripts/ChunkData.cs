@@ -11,20 +11,26 @@ public class ChunkData
     public int randomState;
 
     public GameObject chunk;
-    public GameObject sea;
+    public GameObject terrain;
+    public GameObject water;
     public GameObject trees;
 
-    public MeshFilter meshFilter;
-    public MeshRenderer meshRenderer;
-    public Mesh mesh;
+    public MeshFilter terrainMeshFilter;
+    public MeshFilter waterMeshFilter;
+    public MeshRenderer terrainMeshRenderer;
+    public MeshRenderer waterMeshRenderer;
+    public Mesh terrainMesh;
+    public Mesh waterMesh;
 
-    public float[,] ElevationMap;
-    public float[,] CoastMap;
-    public float[,] MountainMap;
-    public float[,] WetnessMap;
     public float[,] TemperatureMap;
+    public float[,] HumidityMap;
+    public float[,] ElevationMap;
+    public float[,] MountainMap;
+    public int[,] BiomeMap;
     public float[,] FreshWaterMap;
+    public float[,] WetnessMap;
     public float[,] HeightMap;
+    public float[,] WaterHeightMap;
     public bool[,] TreeMap;
 
     public ChunkData(Vector2 _coord)
@@ -33,31 +39,37 @@ public class ChunkData
         loaded = false;
     }
 
-    public void init(GameObject obj)
+    public void Init(GameObject chunkPrefab)
     {
         randomState = (int)(coord.x + coord.y * 10f);
-        chunk = GameObject.Instantiate(obj);
+
+        chunk = GameObject.Instantiate(chunkPrefab);
+        terrain = chunk.transform.Find("Terrain").gameObject;
+        water = chunk.transform.Find("Water").gameObject;
         chunk.transform.position = Vector3.zero;
-        sea = new GameObject();
-        sea.tag = "Water";
-        sea.transform.SetParent(chunk.transform);
         trees = new GameObject();
         trees.transform.SetParent(chunk.transform);
-        meshRenderer = chunk.GetComponent<MeshRenderer>();
-        meshFilter = chunk.GetComponent<MeshFilter>();
-        mesh = new Mesh();
-        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        meshFilter.mesh = mesh;
+
+        terrainMeshRenderer = terrain.GetComponent<MeshRenderer>();
+        waterMeshRenderer = water.GetComponent<MeshRenderer>();
+        terrainMeshFilter = terrain.GetComponent<MeshFilter>();
+        waterMeshFilter = water.GetComponent<MeshFilter>();
+        terrainMesh = new Mesh();
+        waterMesh = new Mesh();
+        terrainMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        waterMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        terrainMeshFilter.mesh = terrainMesh;
+        waterMeshFilter.mesh = waterMesh;
 
         loaded = true;
     }
 
     public void Deload()
     {
-        Component.Destroy(mesh);
+        Component.Destroy(terrainMesh);
+        Component.Destroy(waterMesh);
         GameObject.Destroy(chunk);
         GameObject.Destroy(trees);
-        GameObject.Destroy(sea);
         loaded = false;
 
     }
