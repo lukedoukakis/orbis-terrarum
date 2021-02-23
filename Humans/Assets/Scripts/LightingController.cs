@@ -17,8 +17,8 @@ public class LightingController : MonoBehaviour
     float fog;
 
     static float fog_base = .1f;
-    static float changeSpeed_ambientColor = .5f;
-    static float changeSpeed_fog = .5f;
+    static float changeSpeed_ambientColor = 5f;
+    static float changeSpeed_fog = 5f;
 
     static float period = 1f;
     static float updateTime;
@@ -53,7 +53,7 @@ public class LightingController : MonoBehaviour
     {
         AreaConditions.GetAreaConditions(MainCamera.transform.position);
         temperature = AreaConditions.Temperature;
-        wetness = AreaConditions.Wetness;
+        wetness = AreaConditions.Humidity;
         SetAmbientColor(temperature, wetness);
         SetFog(temperature, wetness);
     }
@@ -62,7 +62,7 @@ public class LightingController : MonoBehaviour
     Color CalculateAmbientColor(float temp, float wetness)
     {
 
-        Color c = Color.Lerp(tempGradient.Evaluate(temp), wetnessGradient.Evaluate(wetness), .5f);
+        Color c = Color.Lerp(tempGradient.Evaluate(temp), wetnessGradient.Evaluate(wetness), .2f);
         return c;
     }
 

@@ -596,7 +596,7 @@ MonoBehaviour:
   mainLight: {fileID: 705507994}
   tempGradient:
     serializedVersion: 2
-    key0: {r: 0.40494835, g: 0.4745127, b: 0.49056602, a: 1}
+    key0: {r: 0.39758563, g: 0.35359558, b: 0.5471698, a: 1}
     key1: {r: 0.5283019, g: 0.5127392, b: 0.30153078, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
@@ -782,11 +782,9 @@ MonoBehaviour:
   WaterMeshFilter: {fileID: 1402622343}
   chunkPrefab: {fileID: 2854202466093326487, guid: 3b2ccdcd009fcc04bb6cee6704c61cba,
     type: 3}
-  waterAlpha: 0.9
-  mountainMapScale: 800
-  elevationMapScale: 800
-  riverMapScale: 200
-  temperatureMapScale: 200
+  waterAlpha: 1
+  mountainMapScale: 200
+  elevationMapScale: 200
   seed: 1
   scale: 60
   octaves: 30
@@ -794,7 +792,7 @@ MonoBehaviour:
   lacunarity: 1.5
   flatLevel: 0.8
   seaLevel: 0.797
-  treeLevel: 0.8
+  snowLevel: 0.84
   treeDensity: 1
   treeRandomness: 0.5
 --- !u!4 &2134817002

@@ -190,12 +190,34 @@ public class Biome : MonoBehaviour
         OceanConditions
     };
 
+    // [temperature, humidity]
+    static int[][] BiomeTable;
+
 
     public static GameObject[][] TreePool;
 
 
     public static void Init()
     {
+
+
+        BiomeTable = new int[][]
+        {
+        new int[]{ (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga },
+        new int[]{ (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga },
+        new int[]{ (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.Tundra, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga, (int)BiomeType.SnowyTaiga },
+        new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga },
+        new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga },
+        new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest },
+        new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest },
+        new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        };
+
+
+
         string biomeName;
         string path;
         TreePool = new GameObject[10][];
@@ -212,80 +234,14 @@ public class Biome : MonoBehaviour
     }
 
 
-    public static int GetBiome(float temp, float humid, float elev, float mountain)
+    public static int GetBiome(float temp, float humid)
     {
 
-        // transform parameters to integer [0, 4] (or -1) scale
-        float[] parameters = new float[] { temp, humid, elev, mountain };
-        int[] sampledTraits = new int[parameters.Length];
-        float p;
-        for(int i = 0; i < parameters.Length; i++)
-        {
-            p = parameters[i];
-            if (p == -1f)
-            {
-                sampledTraits[i] = -1;
-            }
-            else
-            {
-                float f;
+        int temperature = (int)((temp * 10f) + 0.5f);
+        int humidity = (int)((humid * 10f) + 0.5f);
+        //Debug.Log(temp);
+        int biome = BiomeTable[temperature][humidity];
 
-                // if parameter is elevation, use alternate scale
-                if(i == 2)
-                {
-                    f = Mathf.Clamp(parameters[i], ChunkGenerator.MinElevation, ChunkGenerator.MaxElevation);
-                }
-                else
-                {
-                    f = Mathf.Clamp(parameters[i], 0, .999f);
-                }
-                sampledTraits[i] = (int)(f * 5f);
-            }
-        }
-
-        // match the parameters to biome conditions find the biome
-        bool[] blackList = new bool[BiomeConditions.Length];
-        for(int i = 0; i < sampledTraits.Length; i++)
-        {
-            int trait = sampledTraits[i];
-            for (int k = 0; k < BiomeConditions.Length; k++)
-            {
-                if (!blackList[k])
-                {
-                    int[][] BiomeCondition = BiomeConditions[k];
-                    bool hit = false;
-                    for (int j = 0; j < BiomeCondition[i].Length; j++)
-                    {
-                        if (BiomeCondition[i][j] == trait) { hit = true; break; }
-                    }
-                    if (!hit)
-                    {
-                        blackList[k] = true;
-                    }
-                }
-            }
-        }
-
-        int biome = -1;
-        int n = 0;
-        for(int i = 0; i < blackList.Length; i++)
-        {
-            if(!blackList[i]) {
-                n++;
-                biome = i;
-                break;
-            }
-        }
-
-        
-        //Debug.Log(n);
-        //Debug.Log(biome); 
-        
-
-        if(biome == -1)
-        {
-            Debug.Log("NO BIOME MATCHED\n" + sampledTraits[0] + " " + sampledTraits[1] + " " + sampledTraits[2] + " " + sampledTraits[3]);
-        }
         return biome;
 
     }
