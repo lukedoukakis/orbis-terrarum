@@ -23,25 +23,25 @@ public class TreeInfo : MonoBehaviour
         {
             case "Acacia Tree":
                 scale = .05f;
-                density = .05f;
+                density = .01f;
                 normal = .99f;
                 slant = 0f;
                 break;
             case "Jungle Tree":
                 scale = .12f;
-                density = 1f;
+                density = 2f;
                 normal = .7f;
                 slant = .5f;
                 break;
             case "Fir Tree":
                 scale = .07f;
-                density = 1f;
+                density = .75f;
                 normal = .7f;
                 slant = .18f;
                 break;
             case "Snowy Fir Tree":
                 scale = .07f;
-                density = 1f;
+                density = .7f;
                 normal = .7f;
                 slant = .18f;
                 break;
@@ -54,7 +54,7 @@ public class TreeInfo : MonoBehaviour
             case "Oak Tree":
                 scale = .08f;
                 density = 1f;
-                normal = .995f;
+                normal = .998f;
                 slant = .18f;
                 break;
             default:

@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
     Rigidbody rb;
     [SerializeField] float moveSpeed;
     [SerializeField] float sensitivity;
+    float acceleration;
 
     float hor;
     float ver;
@@ -25,6 +26,7 @@ public class CameraController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
 
 
+        acceleration = moveSpeed / 4f;
 
         MainCamera.transform.position = new Vector3(Random.Range(-1000f, 1000f), 0f, Random.Range(-1000f, 1000f)) + Vector3.up * 100f;
         MainCamera.transform.rotation = Quaternion.Euler(25f, 45f, 0f);
@@ -36,27 +38,27 @@ public class CameraController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.W))
         {
-            rb.AddForce((transform.forward + transform.up*25f/45f).normalized * moveSpeed, ForceMode.Acceleration);
+            rb.AddForce((transform.forward + transform.up*25f/45f).normalized * acceleration, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.S))
         {
-            rb.AddForce((transform.forward + transform.up * 25f / 45f).normalized * -1f * moveSpeed, ForceMode.Acceleration);
+            rb.AddForce((transform.forward + transform.up * 25f / 45f).normalized * -1f * acceleration, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.A))
         {
-            rb.AddForce(transform.right * -1f * moveSpeed, ForceMode.Acceleration);
+            rb.AddForce(transform.right * -1f * acceleration, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.D))
         {
-            rb.AddForce(transform.right * moveSpeed, ForceMode.Acceleration);
+            rb.AddForce(transform.right * acceleration, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.Space))
         {
-            rb.AddForce(Vector3.up * moveSpeed/2f, ForceMode.Acceleration);
+            rb.AddForce(Vector3.up * acceleration, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            rb.AddForce(Vector3.up * -1f * moveSpeed / 2f, ForceMode.Acceleration);
+            rb.AddForce(Vector3.up * -1f * acceleration, ForceMode.Acceleration);
         }
 
         /*
