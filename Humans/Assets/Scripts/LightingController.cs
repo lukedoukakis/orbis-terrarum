@@ -31,7 +31,7 @@ public class LightingController : MonoBehaviour
         {
             if (Time.fixedTime >= updateTime)
             {
-                UpdateLighting();
+                //UpdateLighting();
                 updateTime = Time.fixedTime + period;
             }
         }

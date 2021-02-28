@@ -15,6 +15,8 @@ public class CameraController : MonoBehaviour
     float hor;
     float ver;
 
+    static Vector3 flat = new Vector3(1f, 0f, 1f);
+
 
 
     // Start is called before the first frame update
@@ -38,11 +40,11 @@ public class CameraController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.W))
         {
-            rb.AddForce((transform.forward + transform.up*25f/45f).normalized * acceleration, ForceMode.Acceleration);
+            rb.AddForce(Vector3.Scale(transform.forward, flat).normalized * acceleration, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.S))
         {
-            rb.AddForce((transform.forward + transform.up * 25f / 45f).normalized * -1f * acceleration, ForceMode.Acceleration);
+            rb.AddForce(Vector3.Scale(transform.forward, flat).normalized * acceleration * -1f, ForceMode.Acceleration);
         }
         if (Input.GetKey(KeyCode.A))
         {
@@ -90,7 +92,18 @@ public class CameraController : MonoBehaviour
         {
             rb.velocity = rb.velocity.normalized * maxSpeed;
         }
-        
+
+
+        if (Input.GetKeyUp(KeyCode.P))
+        {
+            moveSpeed += 5;
+            acceleration = moveSpeed / 4f;
+        }
+        if (Input.GetKeyUp(KeyCode.O))
+        {
+            moveSpeed -= 5;
+            acceleration = moveSpeed / 4f;
+        }
 
     }
 }

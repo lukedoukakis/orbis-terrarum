@@ -277,8 +277,8 @@ public class ChunkGenerator : MonoBehaviour
                 temperatureValue = 1.25f - (e);
 
                 float latitudeMod;
-                //latitudeMod = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / TemperatureMapScale, (z + zOffset + .01f) / TemperatureMapScale) + .5f, 2f) -1f;
-                latitudeMod = Mathf.Sin((z + zOffset + .01f) / (TemperatureMapScale/4f)) * .5f;
+                latitudeMod = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / TemperatureMapScale, (z + zOffset + .01f) / TemperatureMapScale) + .5f, 2f) -1f;
+                //latitudeMod = Mathf.Sin((z + zOffset + .01f) / (TemperatureMapScale/4f)) * .5f;
 
                 temperatureValue += latitudeMod;
                 temperatureValue = Mathf.Clamp01(temperatureValue);
