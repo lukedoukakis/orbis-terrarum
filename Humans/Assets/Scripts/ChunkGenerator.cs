@@ -290,7 +290,7 @@ public class ChunkGenerator : MonoBehaviour
                 humidityValue = Mathf.PerlinNoise((x + xOffset - seed + .01f) / HumidityMapScale, (z + zOffset - seed + .01f) / HumidityMapScale);
                 humidityValue += mountainValue * .5f;
                 humidityValue = Mathf.Clamp01(humidityValue);
-                humidityValue = Mathf.InverseLerp(0f, .9f, humidityValue);
+                humidityValue = Mathf.InverseLerp(0f, 1f, humidityValue);
                 //humidityValue = e;
                 //humidityValue = .75f;
                 // -------------------------------------------------------
@@ -367,8 +367,8 @@ public class ChunkGenerator : MonoBehaviour
                 float flat;
                 if(elevationValueSmooth > 0f)
                 {
-                    //flat = flatLevel + (e*.01f);
-                    flat = flatLevel;
+                    flat = flatLevel + (e*.01f);
+                    //flat = flatLevel;
                 }
                 else
                 {
@@ -555,8 +555,8 @@ public class ChunkGenerator : MonoBehaviour
                 if (x == 0 || x == ChunkSize + 1) { edgeX = true; } else { edgeX = false; }
                 TerrainVertices[i] = new Vector3(x + xOffset, HeightMap[x, z] * ElevationAmplitude, z + zOffset);
                 TerrainColors[i] = SetVertexColor(x + xOffset, z + zOffset, BiomeMap[x, z], HeightMap[x, z], TemperatureMap[x, z], HumidityMap[x, z], WetnessMap[x, z]);
-                WaterVertices[i] = new Vector3(x + xOffset, seaLevel * ElevationAmplitude, z + zOffset);
-                //WaterVertices[i] = new Vector3(x + xOffset, WaterHeightMap[x, z] * ElevationAmplitude, z + zOffset);
+                //WaterVertices[i] = new Vector3(x + xOffset, seaLevel * ElevationAmplitude, z + zOffset);
+                WaterVertices[i] = new Vector3(x + xOffset, WaterHeightMap[x, z] * ElevationAmplitude, z + zOffset);
                 Color waterColor = new Color();
                 if (edgeZ || edgeX){ waterColor.a = waterAlpha; } else { waterColor.a = waterAlpha; }
                 WaterColors[i] = waterColor;

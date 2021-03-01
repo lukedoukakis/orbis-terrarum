@@ -54,7 +54,13 @@ public class TreeInfo : MonoBehaviour
             case "Oak Tree":
                 scale = .08f;
                 density = 1f;
-                normal = .998f;
+                normal = .9f;
+                slant = .18f;
+                break;
+            case "Plains Oak Tree":
+                scale = .08f;
+                density = 1f;
+                normal = .9985f;
                 slant = .18f;
                 break;
             default:
