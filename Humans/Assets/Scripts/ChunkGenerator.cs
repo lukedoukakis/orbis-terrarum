@@ -5,16 +5,17 @@ using System;
 
 public class ChunkGenerator : MonoBehaviour
 {
-
+    public static int Seed = 100;
     public static int ChunkSize = 50;
     public static int ChunkRenderDistance = 2;
-    public static float ElevationAmplitude = 120;
+    public static float ElevationAmplitude = 180;
     public static float MinElevation = -.292893219f;
     public static float MaxElevation = .224744871f;
     public static int MountainMapScale = 200;
     public static float ElevationMapScale = 2300;
-    public static int TemperatureMapScale = 330;
-    public static int HumidityMapScale = 200;
+    public static int TemperatureMapScale = 450;
+    public static int HumidityMapScale = 300;
+    public static bool LoadingChunks;
     static GameObject Chunk;
     static GameObject Terrain;
     static GameObject Water;
@@ -25,6 +26,7 @@ public class ChunkGenerator : MonoBehaviour
     public Vector2 currentChunkCoord;
 
 
+    [SerializeField] CameraController cameraController;
     [SerializeField] MeshFilter TerrainMeshFilter;
     [SerializeField] MeshFilter WaterMeshFilter;
     Mesh TerrainMesh;
@@ -59,10 +61,8 @@ public class ChunkGenerator : MonoBehaviour
     float[,] FreshWaterMap;
     float[,] WetnessMap;
     float[,] HeightMap;
-    float[,] WaterHeightMap;
     bool[,] TreeMap;
 
-    public int seed;
     public float scale;
     public int octaves;
     [Range(0, 1)] public float persistance;
@@ -82,6 +82,9 @@ public class ChunkGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+        Seed = UnityEngine.Random.Range(0, 1000);
+
         Init();
         Biome.Init();
     }
@@ -94,13 +97,15 @@ public class ChunkGenerator : MonoBehaviour
             LoadChunks();
             DeloadChunks();
         }
-       
+
     }
 
     void Init()
     {
 
-        if (seed == -1) { seed = UnityEngine.Random.Range(-100000, 100000); }
+        if (Seed == -1) { Seed = UnityEngine.Random.Range(-100000, 100000); }
+
+        //RiverGenerator.Generate();
 
         ChunkDataToLoad = new List<ChunkData>();
         ChunkDataLoaded = new List<ChunkData>();
@@ -116,17 +121,17 @@ public class ChunkGenerator : MonoBehaviour
     void UpdateChunksToLoad()
     {
 
-        
-        cameraPos = cameraT.position; cameraPos.y = 0f;
+
+        cameraPos = cameraT.position;
         cameraPos_chunkSpace = ToChunkSpace(cameraPos);
         currentChunkCoord = new Vector2(Mathf.Floor(cameraPos_chunkSpace.x), Mathf.Floor(cameraPos_chunkSpace.y));
 
 
         // get neighbor chunk coordinates
-        Vector2 halfVec = Vector3.one/2f;
-        Vector2[] neighborChunkCoords = new Vector2[(int)Mathf.Pow(ChunkRenderDistance*2, 2)];
+        Vector2 halfVec = Vector3.one / 2f;
+        Vector2[] neighborChunkCoords = new Vector2[(int)Mathf.Pow(ChunkRenderDistance * 2, 2)];
         int i = 0;
-        for (int z = (int)currentChunkCoord.y-ChunkRenderDistance; z < (int)currentChunkCoord.y+ChunkRenderDistance; z++)
+        for (int z = (int)currentChunkCoord.y - ChunkRenderDistance; z < (int)currentChunkCoord.y + ChunkRenderDistance; z++)
         {
             for (int x = (int)currentChunkCoord.x - ChunkRenderDistance; x < (int)currentChunkCoord.x + ChunkRenderDistance; x++)
             {
@@ -148,7 +153,7 @@ public class ChunkGenerator : MonoBehaviour
         // add chunks in rendering range to ChunksToLoad
         foreach (Vector2 chunkCoord in neighborChunkCoords)
         {
-            if(Vector2.Distance(cameraPos_chunkSpace, chunkCoord + halfVec) < ChunkRenderDistance)
+            if (Vector2.Distance(cameraPos_chunkSpace, chunkCoord + halfVec) < ChunkRenderDistance)
             {
 
                 int index = ChunkDataToLoad.FindIndex(cd => cd.coord == chunkCoord);
@@ -158,11 +163,13 @@ public class ChunkGenerator : MonoBehaviour
                 }
             }
         }
-        
+
     }
 
     void LoadChunks()
     {
+
+        LoadingChunks = true;
         foreach (ChunkData cd in ChunkDataToLoad.ToArray())
         {
             if (!cd.loaded)
@@ -171,11 +178,12 @@ public class ChunkGenerator : MonoBehaviour
                 ChunkDataLoaded.Add(cd);
             }
         }
+        LoadingChunks = false;
     }
 
     void DeloadChunks()
     {
-        
+
         foreach (ChunkData loadedCd in ChunkDataLoaded.ToArray())
         {
             int index = ChunkDataToLoad.FindIndex(cd => cd.coord == loadedCd.coord);
@@ -185,13 +193,13 @@ public class ChunkGenerator : MonoBehaviour
                 ChunkDataLoaded.Remove(loadedCd);
             }
         }
-        
+
     }
 
 
     void LoadChunk(ChunkData cd)
     {
-      
+
         cd.Init(chunkPrefab);
         UnityEngine.Random.InitState(cd.randomState);
         Chunk = cd.chunk;
@@ -205,7 +213,7 @@ public class ChunkGenerator : MonoBehaviour
         xOffset = xIndex * ChunkSize;
         zOffset = zIndex * ChunkSize;
 
-        
+
         GenerateTerrainMaps();
         cd.TemperatureMap = TemperatureMap;
         cd.HumidityMap = HumidityMap;
@@ -215,11 +223,10 @@ public class ChunkGenerator : MonoBehaviour
         cd.FreshWaterMap = FreshWaterMap;
         cd.WetnessMap = WetnessMap;
         cd.HeightMap = HeightMap;
-        cd.WaterHeightMap = WaterHeightMap;
         cd.TreeMap = TreeMap;
 
         PlaceTerrainAndWater();
-        PlaceTrees();
+        PlaceFeatures();
 
     }
 
@@ -235,10 +242,9 @@ public class ChunkGenerator : MonoBehaviour
         FreshWaterMap = new float[ChunkSize + 2, ChunkSize + 2];
         WetnessMap = new float[ChunkSize + 2, ChunkSize + 2];
         HeightMap = new float[ChunkSize + 2, ChunkSize + 2];
-        WaterHeightMap = new float[ChunkSize + 2, ChunkSize + 2];
         TreeMap = new bool[ChunkSize + 2, ChunkSize + 2];
 
-        float temperatureValue, humidityValue, elevationValue, mountainValue, freshWaterValue, wetnessValue, heightValue, waterHeightValue;
+        float temperatureValue, humidityValue, elevationValue, mountainValue, freshWaterValue, wetnessValue, heightValue;
         float elevationValueSmooth;
         int biomeValue;
         bool treeValue;
@@ -247,14 +253,14 @@ public class ChunkGenerator : MonoBehaviour
         if (scale <= 0) { scale = .0001f; }
 
         // loop start
-        for (int z = 0; z < ChunkSize + 1; z++)
+        for (int z = 0; z < ChunkSize + 2; z++)
         {
-            for (int x = 0; x < ChunkSize + 1; x++)
+            for (int x = 0; x < ChunkSize + 2; x++)
             {
 
 
-               
-                float e = Mathf.PerlinNoise((x + xOffset - seed + .01f) / ElevationMapScale, (z + zOffset - seed + .01f) / ElevationMapScale);
+
+                float e = Mathf.PerlinNoise((x + xOffset - Seed + .01f) / ElevationMapScale, (z + zOffset - Seed + .01f) / ElevationMapScale);
 
                 // [-.292893219, .224744871]
                 elevationValue = elevationValueSmooth = Mathf.Pow(e + .5f, .5f) - 1f;
@@ -266,7 +272,7 @@ public class ChunkGenerator : MonoBehaviour
                 // -------------------------------------------------------
 
                 // MountainMap [0, 1]
-                mountainValue = Mathf.PerlinNoise((x + xOffset - seed + .01f) / ElevationMapScale, (z + zOffset - seed + .01f) / ElevationMapScale);
+                mountainValue = Mathf.PerlinNoise((x + xOffset - Seed + .01f) / ElevationMapScale, (z + zOffset - Seed + .01f) / ElevationMapScale);
                 mountainValue = Mathf.Pow(mountainValue, 2f);
 
                 // -------------------------------------------------------
@@ -274,39 +280,40 @@ public class ChunkGenerator : MonoBehaviour
 
 
                 // TemperatureMap [0, 1]
-                temperatureValue = 1.25f - (e);
+                temperatureValue = 1.2f - (e);
+                rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 50f, (z + zOffset + .01f) / 50f) + .5f, .1f) - 1f;
+                temperatureValue += rough;
 
                 float latitudeMod;
-                latitudeMod = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / TemperatureMapScale, (z + zOffset + .01f) / TemperatureMapScale) + .5f, 2f) -1f;
-                //latitudeMod = Mathf.Sin((z + zOffset + .01f) / (TemperatureMapScale/4f)) * .5f;
+                latitudeMod = ((Mathf.PerlinNoise((x + xOffset + .01f) / TemperatureMapScale, (z + zOffset + .01f) / TemperatureMapScale) + .5f) - 1f) * 1.5f;
 
                 temperatureValue += latitudeMod;
                 temperatureValue = Mathf.Clamp01(temperatureValue);
-                
+
 
                 // -------------------------------------------------------
 
                 // HumidityMap [0, 1]
-                humidityValue = Mathf.PerlinNoise((x + xOffset - seed + .01f) / HumidityMapScale, (z + zOffset - seed + .01f) / HumidityMapScale);
+                humidityValue = Mathf.PerlinNoise((x + xOffset - Seed + .01f) / HumidityMapScale, (z + zOffset - Seed + .01f) / HumidityMapScale);
                 humidityValue += mountainValue * .5f;
                 humidityValue = Mathf.Clamp01(humidityValue);
                 humidityValue = Mathf.InverseLerp(0f, 1f, humidityValue);
-                //humidityValue = e;
-                //humidityValue = .75f;
+                //humidityValue = .05f;
                 // -------------------------------------------------------
 
 
 
                 // FreshWaterMap [0, 1]
+
                 float riverWindingScale = 75f + (25f * (mountainValue * 2f - 1f));
-                freshWaterValue = Mathf.PerlinNoise((x + xOffset - seed + .01f) / riverWindingScale, (z + zOffset - seed + .01f) / riverWindingScale) * 2f - 1f;
+                freshWaterValue = Mathf.PerlinNoise((x + xOffset - Seed + .01f) / riverWindingScale, (z + zOffset - Seed + .01f) / riverWindingScale) * 2f - 1f;
                 rough = Mathf.Pow(Mathf.PerlinNoise((x + xOffset + .01f) / 10f, (z + zOffset + .01f) / 10f) + .5f, .3f) - 1f;
                 freshWaterValue += rough;
                 freshWaterValue -= Mathf.PerlinNoise((x + xOffset + .01f) / 400f, (z + zOffset + .01f) / 400f) / 2f;
                 freshWaterValue = Mathf.Abs(freshWaterValue);
                 freshWaterValue *= -1f;
                 freshWaterValue += 1f;
-                if (freshWaterValue > .93f) { freshWaterValue = 1f; }
+                if (freshWaterValue > .93f) { freshWaterValue = Mathf.Pow(freshWaterValue, 1f); }
                 else if (freshWaterValue > .85f)
                 {
                     freshWaterValue = .93f;
@@ -316,6 +323,8 @@ public class ChunkGenerator : MonoBehaviour
                     //freshWaterValue = Mathf.Pow(freshWaterValue, 7f * temperatureValue);
                     freshWaterValue = Mathf.Pow(freshWaterValue, 1f);
                 }
+
+
                 //freshWaterValue = -1f;
                 // GOOD FOR CREATING LARGE LAKES AND INLETS FOR WETLAND AREA
                 /*
@@ -353,9 +362,6 @@ public class ChunkGenerator : MonoBehaviour
 
                 wetnessValue = Mathf.Clamp01(wetnessValue);
 
-                //float humidityValue_mod = Mathf.Clamp(humidityValue, .1f, 1f);
-                //wetnessValue *= humidityValue_mod;
-
                 // -------------------------------------------------------
 
                 // BiomeMap
@@ -363,26 +369,15 @@ public class ChunkGenerator : MonoBehaviour
 
                 // -------------------------------------------------------
 
-                // HeightMap [flatLevel, 1] or seaLevel - .01
-                float flat;
-                if(elevationValueSmooth > 0f)
-                {
-                    flat = flatLevel + (e*.01f);
-                    //flat = flatLevel;
-                }
-                else
-                {
-                    flat = flatLevel;
-                }
-                waterHeightValue = flat - .003f;
+                // HeightMap
 
                 heightValue = 0f;
                 float amplitude = 1;
                 float frequency = 1;
                 for (int i = 0; i < octaves; i++)
                 {
-                    float sampleX = (x + xOffset) / scale * frequency + seed;
-                    float sampleZ = (z + zOffset) / scale * frequency + seed;
+                    float sampleX = (x + xOffset) / scale * frequency + Seed;
+                    float sampleZ = (z + zOffset) / scale * frequency + Seed;
 
                     float scale2 = scale + 5f;
                     float scale3 = scale - 5f;
@@ -404,24 +399,24 @@ public class ChunkGenerator : MonoBehaviour
                 heightValue *= -1f;
                 heightValue = Mathf.InverseLerp(-75f, .01f, heightValue);
 
-                // apply land flattening
-                if (heightValue < flat)
+                // reduce hills
+                if (heightValue < flatLevel)
                 {
-                    heightValue = flat;
+                    heightValue = flatLevel;
                 }
-                else if (heightValue >= flat)
+                else if (heightValue >= flatLevel)
                 {
-                    tMod = Mathf.Pow(temperatureValue + .5f, 1f);
-                    heightValue = Mathf.Lerp(heightValue, flat, (1f - mountainValue) * tMod);
+                    tMod = Mathf.Pow(temperatureValue + .5f, .6f);
+                    heightValue = Mathf.Lerp(heightValue, flatLevel, (1f - mountainValue) * tMod);
                 }
 
                 // apply ElevationMap with respect to TemperatureMap
                 heightValue += elevationValueSmooth * .1f;
 
-
                 // flatten high areas with respect to TemperatureMap
                 tMod = 1f - Mathf.InverseLerp(temperatureValue, .45f, .55f);
-                float heightCutoff = Mathf.Lerp(flat + .01f, 1f, tMod);
+                float heightCutoff = Mathf.Lerp(flatLevel + .01f, 1f, tMod);
+                heightCutoff = Mathf.Clamp(heightCutoff, .86f + (flatLevel - flatLevel), 1f);
                 if (heightValue > heightCutoff)
                 {
                     heightValue = Mathf.Lerp(heightValue, heightCutoff, tMod);
@@ -430,7 +425,9 @@ public class ChunkGenerator : MonoBehaviour
                 // create ocean where height is below flatLevel
                 if (heightValue < flatLevel)
                 {
-                    heightValue = seaLevel - .01f;
+                    //heightValue = (seaLevel - .01f);
+                    float f = Mathf.InverseLerp(0f, .004f, flatLevel - heightValue);
+                    freshWaterValue = Mathf.Max(freshWaterValue, f);
                 }
 
                 if (heightValue >= seaLevel)
@@ -439,9 +436,10 @@ public class ChunkGenerator : MonoBehaviour
                     // add fresh water
                     if (freshWaterValue > 0f)
                     {
-                        if (freshWaterValue == 1f)
+                        if (freshWaterValue > .93f)
                         {
-                            heightValue = seaLevel - .01f;
+                            float f = Mathf.InverseLerp(.93f, 1f, freshWaterValue);
+                            heightValue = Mathf.Lerp(Mathf.Min(flatLevel, heightValue), (seaLevel - .01f), f);
                         }
                         else
                         {
@@ -450,7 +448,19 @@ public class ChunkGenerator : MonoBehaviour
                             {
                                 rough = (Mathf.PerlinNoise((float)(x + xOffset) / .1f + .01f, (float)((z + zOffset) / .1f + .01f)) * 2f - 1f) / 1f;
                             }
-                            heightValue = Mathf.Lerp(heightValue, flat, freshWaterValue + rough);
+                            heightValue = Mathf.Lerp(heightValue, flatLevel, freshWaterValue + rough);
+                        }
+                    }
+
+
+                }
+                else{
+                    if (freshWaterValue > 0f)
+                    {
+                        if (freshWaterValue > .93f)
+                        {
+                            float f = Mathf.InverseLerp(.93f, 1f, freshWaterValue);
+                            heightValue = Mathf.Lerp(Mathf.Min(flatLevel, heightValue), (seaLevel - .01f), f);
                         }
                     }
                 }
@@ -458,14 +468,13 @@ public class ChunkGenerator : MonoBehaviour
                 // create slight roughness in terrain
                 if (biomeValue == (int)Biome.BiomeType.Desert)
                 {
-                    heightValue += .0016f * (Mathf.Sin((x + xOffset - seed + .01f) / .025f) * Mathf.Sin((z + zOffset - seed + .01f) / 2f));
+                    float duneMag = .012f * (1f - Mathf.Pow(Mathf.Clamp01(freshWaterValue), 1.3f)) * (1f - Mathf.Pow(wetnessValue, 1.2f));
+                    heightValue += duneMag * (1f - Mathf.Abs(Mathf.Sin((x + xOffset - Seed + .01f + Mathf.Sin(z+zOffset)*8f) / 15f)));
                 }
                 else
                 {
-                    heightValue += .005f * Mathf.PerlinNoise((x + xOffset - seed + .01f) / 2f, (z + zOffset - seed + .01f) / 2f);
+                    heightValue += .0025f * Mathf.PerlinNoise((x + xOffset - Seed + .01f) / 2f, (z + zOffset - Seed + .01f) / 2f);
                 }
-
-
 
                 // -------------------------------------------------------
 
@@ -486,7 +495,6 @@ public class ChunkGenerator : MonoBehaviour
                 FreshWaterMap[x, z] = freshWaterValue;
                 WetnessMap[x, z] = wetnessValue;
                 HeightMap[x, z] = heightValue;
-                WaterHeightMap[x, z] = waterHeightValue;
                 TreeMap[x, z] = treeValue;
 
             }
@@ -494,38 +502,42 @@ public class ChunkGenerator : MonoBehaviour
 
     }
 
-    Color SetVertexColor(int x, int z, int biome, float height, float temperature, float humidity, float wetness)
+    Color SetVertexColor(int biome, float height, float temperature, float humidity, float wetness, float fw)
     {
+
+        
         Color c = new Color();
 
-
-
+        
         if (biome == (int)Biome.BiomeType.Tundra || biome == (int)Biome.BiomeType.SnowyTaiga)
         {
             c.b = 255f;
+            return c;
         }
-        else if(temperature < (5f/11f))
+        else if (temperature < (5f / 11f))
         {
-            if (height > snowLevel + ((1f - temperature)*.05f) * (UnityEngine.Random.value*.05f))
+            if (height > snowLevel + ((1f - temperature) * .05f) * (UnityEngine.Random.value * .05f))
             {
                 c.b = 255f;
-
+                return c;
             }
         }
-        else
+        
+
+        // wetness (darkness of land)
+        if (biome == (int)Biome.BiomeType.Desert)
         {
-            float wet, temp;
-            wet = wetness;
-            temp = temperature + .3f;
-            temp = Mathf.Abs(1f - temp);
-            temp = Mathf.Pow(temp, 2f);
-
-            // humidity
-            c.g = 255f * wet * Mathf.Pow(temp, .1f);
-
-            // desert yellow (add red)
-            c.r = 255f * Mathf.Min(temperature, 1f - Mathf.Lerp(humidity, wetness, .3f));
+            c.g = 255f * Mathf.Clamp01(Mathf.Pow(fw, 1.5f)) *.3f;
+        }else if(biome == (int)Biome.BiomeType.Chaparral){
+            c.g = 255f * Mathf.Clamp01(Mathf.Pow(fw, 1.5f)) *.3f;
+        }else{
+            c.g = 255f * wetness;
         }
+        
+
+        // yellowness
+        c.r = 255f * Mathf.Lerp(1f - wetness, temperature, .5f);
+
         return c;
     }
 
@@ -533,10 +545,10 @@ public class ChunkGenerator : MonoBehaviour
 
     void PlaceTerrainAndWater()
     {
-        
+
         // initialize properties for meshes
         TerrainVertices = new Vector3[(ChunkSize + 2) * (ChunkSize + 2)];
-        TerrainTriangles = new int[(ChunkSize+2) * (ChunkSize+2) * 6];
+        TerrainTriangles = new int[(ChunkSize + 2) * (ChunkSize + 2) * 6];
         TerrainUvs = new Vector2[TerrainVertices.Length];
         TerrainColors = new Color[TerrainVertices.Length];
         WaterVertices = new Vector3[(ChunkSize + 2) * (ChunkSize + 2)];
@@ -545,33 +557,28 @@ public class ChunkGenerator : MonoBehaviour
         WaterColors = new Color[TerrainVertices.Length];
 
 
-        // set terrain vertices according to HeightMap, and water vertices according to waterLevel
-        bool edgeZ, edgeX;
+        // set terrain vertices according to HeightMap
         for (int i = 0, z = 0; z < ChunkSize + 2; z++)
         {
-            if (z == 0 || z == ChunkSize + 1) { edgeZ = true; } else { edgeZ = false; }
             for (int x = 0; x < ChunkSize + 2; x++)
             {
-                if (x == 0 || x == ChunkSize + 1) { edgeX = true; } else { edgeX = false; }
                 TerrainVertices[i] = new Vector3(x + xOffset, HeightMap[x, z] * ElevationAmplitude, z + zOffset);
-                TerrainColors[i] = SetVertexColor(x + xOffset, z + zOffset, BiomeMap[x, z], HeightMap[x, z], TemperatureMap[x, z], HumidityMap[x, z], WetnessMap[x, z]);
-                //WaterVertices[i] = new Vector3(x + xOffset, seaLevel * ElevationAmplitude, z + zOffset);
-                WaterVertices[i] = new Vector3(x + xOffset, WaterHeightMap[x, z] * ElevationAmplitude, z + zOffset);
+                TerrainColors[i] = SetVertexColor(BiomeMap[x, z], HeightMap[x, z], TemperatureMap[x, z], HumidityMap[x, z], WetnessMap[x, z], FreshWaterMap[x, z]);
+                WaterVertices[i] = new Vector3(x + xOffset, seaLevel * ElevationAmplitude, z + zOffset);
                 Color waterColor = new Color();
-                if (edgeZ || edgeX){ waterColor.a = waterAlpha; } else { waterColor.a = waterAlpha; }
+                waterColor.a = waterAlpha;
                 WaterColors[i] = waterColor;
-
                 i++;
             }
         }
-        
+
 
         // set up triangles
         int vert = 0;
         int tris = 0;
-        for (int z = 0; z < ChunkSize+1; z++)
+        for (int z = 0; z < ChunkSize + 1; z++)
         {
-            for (int x = 0; x < ChunkSize+1; x++)
+            for (int x = 0; x < ChunkSize + 1; x++)
             {
                 TerrainTriangles[tris + 0] = vert + 0;
                 TerrainTriangles[tris + 1] = vert + ChunkSize + 2;
@@ -592,9 +599,9 @@ public class ChunkGenerator : MonoBehaviour
             vert++;
         }
 
-        for (int i = 0, z = 0; z < ChunkSize+1; z++)
+        for (int i = 0, z = 0; z < ChunkSize + 1; z++)
         {
-            for (int x = 0; x < ChunkSize+1; x++)
+            for (int x = 0; x < ChunkSize + 1; x++)
             {
                 TerrainUvs[i] = new Vector2((float)x + xOffset, (float)z + zOffset);
                 WaterUvs[i] = TerrainUvs[i];
@@ -620,67 +627,112 @@ public class ChunkGenerator : MonoBehaviour
     }
 
 
-    void PlaceTrees()
+    void PlaceFeatures()
     {
+        int biome;
+        float wetness;
+        float temperature;
+        float fw;
+
         for (int z = 0; z < ChunkSize + 2; z++)
         {
             for (int x = 0; x < ChunkSize + 2; x++)
             {
-                // tree placement
+
+                biome = BiomeMap[x, z];
+                wetness = WetnessMap[x, z];
+                temperature = TemperatureMap[x, z];
+                fw = FreshWaterMap[x, z];
+
+            
                 if (TreeMap[x, z])
                 {
-                    Tuple<GameObject, Tuple<float, float, float, float>> treeTuple = Biome.GetTree(BiomeMap[x, z], WetnessMap[x, z]);
-
-                    if (treeTuple != null)
+                    // tree placement
+                    var treeTuple = Biome.GetTree(biome, wetness, fw);
+                    if (treeTuple != null && treeTuple.Item2.Item2 > 0f)
                     {
-                        //Debug.Log("placing tree");
-                        GameObject tree = treeTuple.Item1;
-                        Tuple<float, float, float, float> info = treeTuple.Item2;
-                        float treeScale = info.Item1;
-                        int passesMultipler = (int)(info.Item2 * 10f);
-                        float treeMinYNormal = info.Item3;
-                        float treeAngleMultiplier = info.Item4;
-                        //Debug.Log(treeScale + " " + passesMultipler + " " + treeMinYNormal + " " + treeAngleMultiplier);
-                        Quaternion uprightRot;
-                        Quaternion slantedRot;
+                        PlaceTreeBundle(treeTuple, wetness, x, z);
+                    }
 
-                        int passes = (int)(WetnessMap[x, z] * passesMultipler * treeDensity);
-                        passes = Mathf.Clamp(passes, (int)(UnityEngine.Random.value+.25f), passes);
-                        if(passes > 10) {  }
-                        if (passes > 0)
-                        {
-                            for (int j = 0; j < treeDensity * passes; j++)
-                            {
-                                Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
-                                if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, ElevationAmplitude - (seaLevel * ElevationAmplitude)))
-                                {
-                                    Vector3 point = hit.point;
-                                    if (hit.normal.y > treeMinYNormal)
-                                    {
+                    // tree placement
+                    var featureTuple = Biome.GetFeature(biome, wetness, fw);
+                    if(featureTuple != null)
+                    {
+                        PlaceTreeBundle(featureTuple, wetness, x, z);
+                    } 
+                }
+            }
+        }
+    }
 
-                                        uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
-                                        slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
+    void PlaceTreeBundle(Tuple<GameObject, Tuple<float, float, float, float>> treeTuple, float wetness, int x, int z)
+    {
+        GameObject tree = treeTuple.Item1;
+        float treeScale = treeTuple.Item2.Item1;
+        int passesMultipler = (int)(treeTuple.Item2.Item2 * 10f);
+        float treeMinYNormal = treeTuple.Item2.Item3;
+        float treeAngleMultiplier = treeTuple.Item2.Item4;
+        //Debug.Log(treeScale + " " + passesMultipler + " " + treeMinYNormal + " " + treeAngleMultiplier);
+        Quaternion uprightRot;
+        Quaternion slantedRot;
 
-                                        tree = GameObject.Instantiate(tree, point, Quaternion.Slerp(uprightRot, slantedRot, treeAngleMultiplier), Trees.transform);
-                                        tree.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
-                                    }
-                                }
-                            }
-                        }
-                        
+        int passes = (int)(wetness * passesMultipler * treeDensity);
+        passes = Mathf.Clamp(passes, (int)(UnityEngine.Random.value + .25f), passes);
+        if (passes > 0)
+        {
+            for (int j = 0; j < treeDensity * passes; j++)
+            {
+                Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
+                if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, ElevationAmplitude - ((seaLevel + .002f)* ElevationAmplitude)))
+                {
+                    Vector3 point = hit.point;
+                    if (hit.normal.y > treeMinYNormal)
+                    {
+
+                        uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
+                        slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
+
+                        tree = GameObject.Instantiate(tree, point, Quaternion.Slerp(uprightRot, slantedRot, treeAngleMultiplier), Trees.transform);
+                        tree.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
                     }
                 }
-            } 
+            }
         }
+    }
+
+    void PlaceFeature(GameObject feature, int x, int z)
+    {
+
+        float scale = .05f;
+        float minNormal = 0f;
+        float angleMultiplier = 0f;
+
+        Quaternion uprightRot;
+        Quaternion slantedRot;
+        Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
+        if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, ElevationAmplitude - (seaLevel * ElevationAmplitude)))
+        {
+            Vector3 point = hit.point;
+            if (hit.normal.y > minNormal)
+            {
+                uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
+                slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
+
+                feature = GameObject.Instantiate(feature, point, Quaternion.Slerp(uprightRot, slantedRot, angleMultiplier), Trees.transform);
+                feature.transform.localScale = Vector3.one * scale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
+            }
+        }
+
     }
 
 
     // returns given position translated to chunk coordinates, based on chunkSize
     public static Vector2 ToChunkSpace(Vector3 position)
     {
-        return new Vector2(position.x / (ChunkSize+1), position.z / (ChunkSize+1));
+        return new Vector2(position.x / (ChunkSize), position.z / (ChunkSize));
     }
 
+    // retrieve ChunkData in ChunkDataLoaded associated with the chunk coordinate
     public static ChunkData GetChunk(Vector2 chunkCoord)
     {
         //Debug.Log(chunkCoord);
@@ -695,7 +747,7 @@ public class ChunkGenerator : MonoBehaviour
         return null;
     }
 
-    // retrieves ChunkData in ChunkDataLoaded associated with the raw position given
+    // retrieve ChunkData in ChunkDataLoaded associated with the raw position given
     public static ChunkData GetChunk(Vector3 position)
     {
         Vector2 position_chunkSpace = ToChunkSpace(position);
@@ -708,10 +760,10 @@ public class ChunkGenerator : MonoBehaviour
         float ret = -1;
 
         float sectionSize = maxValue / sections;
-        for(int i = 0; i < sections; i++)
+        for (int i = 0; i < sections; i++)
         {
             ret = sectionSize * (i + 1);
-            if(value <= ret)
+            if (value <= ret)
             {
                 return ret;
             }

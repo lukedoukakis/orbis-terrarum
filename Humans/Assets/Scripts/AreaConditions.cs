@@ -14,12 +14,14 @@ public class AreaConditions
     static float OriginHeight;
 
     public static float Height;
+    public static float Elevation;
     public static float Temperature;
     public static float Humidity;
     public static float FreshWater;
 
     // for instantiations
     public float height;
+    public float elevation;
     public float temperature;
     public float humidity;
     public float freshWater;
@@ -35,6 +37,7 @@ public class AreaConditions
         GetAreaConditions(position);
         SampleConditions();
         height = Height;
+        elevation = Elevation;
         temperature = Temperature;
         humidity = Humidity;
         freshWater = FreshWater;
@@ -56,6 +59,8 @@ public class AreaConditions
         OriginZ = z;
         OriginHeight = position.y / ChunkGenerator.ElevationAmplitude;
 
+        Height = chunk.HeightMap[x, z];
+        Elevation = chunk.ElevationMap[x, z];
         Temperature = chunk.TemperatureMap[x, z];
         Humidity = chunk.HumidityMap[x, z];
 

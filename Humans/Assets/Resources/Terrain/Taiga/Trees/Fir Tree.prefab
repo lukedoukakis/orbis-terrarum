@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4149566187594814930}
   - component: {fileID: 4149566187597650742}
   - component: {fileID: 4149566187596676974}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Fir Tree
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -58,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b218d35c8dc65164892039ea0aea3b4b, type: 2}
+  - {fileID: 2100000, guid: c7470c2cbcd88a14e98d9daa83be575f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

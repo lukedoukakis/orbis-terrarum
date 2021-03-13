@@ -26,6 +26,7 @@ public class Biome : MonoBehaviour
     // [temperature, humidity]
     static int[][] BiomeTable;
     public static GameObject[][] TreePool;
+    public static GameObject[][] FeaturePool;
 
 
 
@@ -44,10 +45,10 @@ public class Biome : MonoBehaviour
         new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga, (int)BiomeType.Taiga },
         new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest },
         new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest, (int)BiomeType.Forest },
-        new int[]{ (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Plains, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah },
-        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
-        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
-        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Chaparral, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
+        new int[]{ (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Desert, (int)BiomeType.Savannah, (int)BiomeType.Savannah, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle, (int)BiomeType.Jungle },
         };
 
 
@@ -55,11 +56,20 @@ public class Biome : MonoBehaviour
         string biomeName;
         string path;
         TreePool = new GameObject[10][];
+        FeaturePool = new GameObject[10][];
         for (int i = 0; i < TreePool.Length; i++)
         {
             biomeName = ((BiomeType)i).ToString();
+
+            // trees
             path = "Terrain/" + biomeName + "/Trees";
             TreePool[i] = Resources.LoadAll<GameObject>(path);
+
+            // features
+            path = "Terrain/" + biomeName + "/Features";
+            FeaturePool[i] = Resources.LoadAll<GameObject>(path);
+
+
             //Debug.Log(TreePool[i].Length);
         }
 
@@ -80,20 +90,27 @@ public class Biome : MonoBehaviour
 
     }
 
-    public static Tuple<GameObject, Tuple<float, float, float, float>> GetTree(int biomeType, float wetness)
+    public static Tuple<GameObject, Tuple<float, float, float, float>> GetTree(int biomeType, float wetness, float fw)
     {
         //Debug.Log(((BiomeType)biomeType).ToString());
         GameObject[] trees = TreePool[biomeType];
         if(trees.Length > 0)
         {
             GameObject tree = trees[UnityEngine.Random.Range(0, trees.Length)];
-            return Tuple.Create(tree, TreeInfo.GetPlacementRequirements(tree.name, wetness));
+            return Tuple.Create(tree, TreeInfo.GetPlacementParameters(tree.name, wetness, fw));
         }
-        else
+        return null;
+    }
+
+
+    public static Tuple<GameObject, Tuple<float, float, float, float>> GetFeature(int biomeType, float wetness, float fw){
+        GameObject[] features = FeaturePool[biomeType];
+        if(features.Length > 0)
         {
-            //Debug.Log("GetTree(" + biomeType + "): returning null");
-            return null;
+            GameObject feature = features[UnityEngine.Random.Range(0, features.Length)];
+            return Tuple.Create(feature, TreeInfo.GetPlacementParameters(feature.name, wetness, fw));
         }
+        return null;
     }
 
 

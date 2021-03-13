@@ -30,7 +30,6 @@ public class ChunkData
     public float[,] FreshWaterMap;
     public float[,] WetnessMap;
     public float[,] HeightMap;
-    public float[,] WaterHeightMap;
     public bool[,] TreeMap;
 
     public ChunkData(Vector2 _coord)

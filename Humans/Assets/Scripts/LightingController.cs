@@ -6,21 +6,24 @@ public class LightingController : MonoBehaviour
 {
 
     public Camera MainCamera;
+    public Material skyMat;
     public Light mainLight;
 
     public Gradient tempGradient;
     public Gradient wetnessGradient;
+    float height;
+    float elevation;
     float temperature;
     float wetness;
 
-    Color ambientColor;
+    Color ambientColor, fogColor;
     float fog;
 
-    static float fog_base = .1f;
+    static float fog_base = .2f;
     static float changeSpeed_ambientColor = 5f;
     static float changeSpeed_fog = 5f;
 
-    static float period = 1f;
+    static float period = .1f;
     static float updateTime;
 
 
@@ -31,7 +34,7 @@ public class LightingController : MonoBehaviour
         {
             if (Time.fixedTime >= updateTime)
             {
-                //UpdateLighting();
+                UpdateLighting();
                 updateTime = Time.fixedTime + period;
             }
         }
@@ -52,10 +55,12 @@ public class LightingController : MonoBehaviour
     void UpdateLighting()
     {
         AreaConditions.GetAreaConditions(MainCamera.transform.position);
+        height = AreaConditions.Height;
         temperature = AreaConditions.Temperature;
         wetness = AreaConditions.Humidity;
-        SetAmbientColor(temperature, wetness);
-        SetFog(temperature, wetness);
+        elevation = AreaConditions.Elevation;
+        //SetLightingColors(temperature, wetness);
+        SetFogDensity(temperature, wetness);
     }
 
 
@@ -66,18 +71,31 @@ public class LightingController : MonoBehaviour
         return c;
     }
 
-    void SetAmbientColor(float temp, float wetness)
+    Color CalculateFogColor(float temp, float wetness)
     {
-        Color c = CalculateAmbientColor(temp, wetness);
-        ambientColor = Color.Lerp(ambientColor, c, changeSpeed_ambientColor * Time.deltaTime);
-        RenderSettings.ambientLight = ambientColor;
+
+        Color c = Color.Lerp(tempGradient.Evaluate(temp), wetnessGradient.Evaluate(wetness), 1f);
+        return c;
     }
 
-    void SetFog(float temp, float wetness)
+    void SetLightingColors(float temp, float wetness)
     {
-        float f = wetness * fog_base;
-        f = Mathf.Clamp(f, 0f, Mathf.Pow(temp, 5f));
+        //Color a = CalculateAmbientColor(temp, wetness);
+        //ambientColor = Color.Lerp(ambientColor, a, changeSpeed_ambientColor * Time.deltaTime);
+        //RenderSettings.ambientLight = ambientColor;
+
+        Color f = CalculateFogColor(temp, wetness);
+        fogColor = Color.Lerp(fogColor, f, changeSpeed_ambientColor * Time.deltaTime);
+        RenderSettings.fogColor = fogColor;
+    }
+
+    void SetFogDensity(float temp, float wetness)
+    {
+        wetness = Mathf.Clamp01(wetness - .6f);
+        temp = Mathf.Clamp01(temp - .6f);
+        float f = ((wetness + temp) / 2f) * fog_base;
         fog = Mathf.Lerp(fog, f, changeSpeed_fog * Time.deltaTime);
         RenderSettings.fogDensity = fog;
+        //skyMat.SetFloat("_FogHeight", Mathf.Clamp01(fog/fog_base - .05f));
     }
 }
