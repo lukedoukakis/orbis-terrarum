@@ -76,7 +76,6 @@ public class ChunkGenerator : MonoBehaviour
     // feature
     GameObject Trees;
     [Range(0f, 1f)] public float treeDensity;
-    [Range(0f, 1f)] public float treeRandomness;
 
 
     // Start is called before the first frame update
@@ -289,6 +288,7 @@ public class ChunkGenerator : MonoBehaviour
 
                 temperatureValue += latitudeMod;
                 temperatureValue = Mathf.Clamp01(temperatureValue);
+                //temperatureValue = .8f;
 
 
                 // -------------------------------------------------------
@@ -298,7 +298,7 @@ public class ChunkGenerator : MonoBehaviour
                 humidityValue += mountainValue * .5f;
                 humidityValue = Mathf.Clamp01(humidityValue);
                 humidityValue = Mathf.InverseLerp(0f, 1f, humidityValue);
-                //humidityValue = .05f;
+                //humidityValue = .9f;
                 // -------------------------------------------------------
 
 
@@ -479,7 +479,7 @@ public class ChunkGenerator : MonoBehaviour
                 // -------------------------------------------------------
 
                 // TreeMap
-                if (heightValue >= flatLevel)
+                if (heightValue > seaLevel && freshWaterValue < 1f)
                 {
                     treeValue = true;
                 }
@@ -632,6 +632,7 @@ public class ChunkGenerator : MonoBehaviour
         int biome;
         float wetness;
         float temperature;
+        float height;
         float fw;
 
         for (int z = 0; z < ChunkSize + 2; z++)
@@ -642,39 +643,48 @@ public class ChunkGenerator : MonoBehaviour
                 biome = BiomeMap[x, z];
                 wetness = WetnessMap[x, z];
                 temperature = TemperatureMap[x, z];
+                height = HeightMap[x, z];
                 fw = FreshWaterMap[x, z];
+                bool onWater;
 
             
                 if (TreeMap[x, z])
                 {
+                    if(seaLevel >= height-.00025f){
+                        onWater = seaLevel - height <= .0018f;
+                    }
+                    else{ onWater = false; }
+
                     // tree placement
                     var treeTuple = Biome.GetTree(biome, wetness, fw);
                     if (treeTuple != null && treeTuple.Item2.Item2 > 0f)
                     {
-                        PlaceTreeBundle(treeTuple, wetness, x, z);
+                        PlaceTreeBundle(treeTuple, wetness, onWater, x, z);
                     }
 
-                    // tree placement
-                    var featureTuple = Biome.GetFeature(biome, wetness, fw);
+                    // feature placement
+                    var featureTuple = Biome.GetFeature(biome, wetness, fw, onWater);
                     if(featureTuple != null)
                     {
-                        PlaceTreeBundle(featureTuple, wetness, x, z);
-                    } 
+                        PlaceTreeBundle(featureTuple, wetness, onWater, x, z);
+                    }
                 }
             }
         }
     }
 
-    void PlaceTreeBundle(Tuple<GameObject, Tuple<float, float, float, float>> treeTuple, float wetness, int x, int z)
+    void PlaceTreeBundle(Tuple<GameObject, Tuple<float, float, float, float, float>> treeTuple, float wetness, bool onWater, int x, int z)
     {
         GameObject tree = treeTuple.Item1;
         float treeScale = treeTuple.Item2.Item1;
         int passesMultipler = (int)(treeTuple.Item2.Item2 * 10f);
         float treeMinYNormal = treeTuple.Item2.Item3;
         float treeAngleMultiplier = treeTuple.Item2.Item4;
-        //Debug.Log(treeScale + " " + passesMultipler + " " + treeMinYNormal + " " + treeAngleMultiplier);
+        float spreadMultiplier = treeTuple.Item2.Item5;
         Quaternion uprightRot;
         Quaternion slantedRot;
+        Vector3 castVec;
+        float castLength;
 
         int passes = (int)(wetness * passesMultipler * treeDensity);
         passes = Mathf.Clamp(passes, (int)(UnityEngine.Random.value + .25f), passes);
@@ -682,12 +692,24 @@ public class ChunkGenerator : MonoBehaviour
         {
             for (int j = 0; j < treeDensity * passes; j++)
             {
-                Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
-                if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, ElevationAmplitude - ((seaLevel + .002f)* ElevationAmplitude)))
+                castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * spreadMultiplier * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * spreadMultiplier * 10);
+                
+                if(onWater){ castLength = ElevationAmplitude - ((seaLevel - .0003f)* ElevationAmplitude); }
+                else{ castLength = ElevationAmplitude - ((seaLevel + .002f)* ElevationAmplitude); }
+                if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, castLength))
                 {
                     Vector3 point = hit.point;
                     if (hit.normal.y > treeMinYNormal)
                     {
+                        if(onWater){
+                            if(point.y < (seaLevel - .0018f) * ElevationAmplitude){
+                                uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
+                                slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
+
+                                tree = GameObject.Instantiate(tree, point, Quaternion.Slerp(uprightRot, slantedRot, treeAngleMultiplier), Trees.transform);
+                                tree.transform.localScale = Vector3.one * treeScale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
+                            }
+                        }
 
                         uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
                         slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
@@ -698,31 +720,6 @@ public class ChunkGenerator : MonoBehaviour
                 }
             }
         }
-    }
-
-    void PlaceFeature(GameObject feature, int x, int z)
-    {
-
-        float scale = .05f;
-        float minNormal = 0f;
-        float angleMultiplier = 0f;
-
-        Quaternion uprightRot;
-        Quaternion slantedRot;
-        Vector3 castVec = new Vector3(x + xOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10, ElevationAmplitude, z + zOffset + (UnityEngine.Random.value * 2f - 1f) * treeRandomness * 10);
-        if (Physics.Raycast(castVec, Vector3.down, out RaycastHit hit, ElevationAmplitude - (seaLevel * ElevationAmplitude)))
-        {
-            Vector3 point = hit.point;
-            if (hit.normal.y > minNormal)
-            {
-                uprightRot = Quaternion.AngleAxis(UnityEngine.Random.value * 360f, Vector3.up);
-                slantedRot = Quaternion.FromToRotation(transform.up, hit.normal);
-
-                feature = GameObject.Instantiate(feature, point, Quaternion.Slerp(uprightRot, slantedRot, angleMultiplier), Trees.transform);
-                feature.transform.localScale = Vector3.one * scale * Mathf.Pow(UnityEngine.Random.value + .5f, .2f);
-            }
-        }
-
     }
 
 

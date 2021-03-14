@@ -27,6 +27,7 @@ public class Biome : MonoBehaviour
     static int[][] BiomeTable;
     public static GameObject[][] TreePool;
     public static GameObject[][] FeaturePool;
+    public static GameObject[][] WaterFeaturePool;
 
 
 
@@ -57,6 +58,7 @@ public class Biome : MonoBehaviour
         string path;
         TreePool = new GameObject[10][];
         FeaturePool = new GameObject[10][];
+        WaterFeaturePool = new GameObject[10][];
         for (int i = 0; i < TreePool.Length; i++)
         {
             biomeName = ((BiomeType)i).ToString();
@@ -68,6 +70,10 @@ public class Biome : MonoBehaviour
             // features
             path = "Terrain/" + biomeName + "/Features";
             FeaturePool[i] = Resources.LoadAll<GameObject>(path);
+
+            // water features
+            path = "Terrain/" + biomeName + "/Features Water";
+            WaterFeaturePool[i] = Resources.LoadAll<GameObject>(path);
 
 
             //Debug.Log(TreePool[i].Length);
@@ -90,7 +96,7 @@ public class Biome : MonoBehaviour
 
     }
 
-    public static Tuple<GameObject, Tuple<float, float, float, float>> GetTree(int biomeType, float wetness, float fw)
+    public static Tuple<GameObject, Tuple<float, float, float, float, float>> GetTree(int biomeType, float wetness, float fw)
     {
         //Debug.Log(((BiomeType)biomeType).ToString());
         GameObject[] trees = TreePool[biomeType];
@@ -103,8 +109,11 @@ public class Biome : MonoBehaviour
     }
 
 
-    public static Tuple<GameObject, Tuple<float, float, float, float>> GetFeature(int biomeType, float wetness, float fw){
-        GameObject[] features = FeaturePool[biomeType];
+    public static Tuple<GameObject, Tuple<float, float, float, float, float>> GetFeature(int biomeType, float wetness, float fw, bool onWater){
+        
+        GameObject[] features;
+        if(onWater){ features = WaterFeaturePool[biomeType]; }
+        else{ features = FeaturePool[biomeType]; }
         if(features.Length > 0)
         {
             GameObject feature = features[UnityEngine.Random.Range(0, features.Length)];
