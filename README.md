@@ -1,7 +1,7 @@
 ![image](https://github.com/lukedoukakis/orbis-terrarum/blob/main/images/img%20(5).png)
 # orbis-terrarum
 
-This is a procedurally generated low-poly world made in Unity.
+This is a procedurally generated low-poly world made in Unity.  
 [Video](https://www.youtube.com/watch?v=K0nGPhG4Lio)  
 [Download build](https://github.com/lukedoukakis/orbis-terrarum/raw/main/build.zip) (unzip and launch TerrainGenerator.exe)  
   
